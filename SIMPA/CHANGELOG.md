@@ -3,12 +3,12 @@
 **Documentado por:** Augusto (Líder do Projeto)  
 **Objetivo:** Preparação para o primeiro commit no GitHub (Fechamento da Sprint / Entrega 1).
 
-## 📊 Métricas de Desenvolvimento desta Entrega
+##  Métricas de Desenvolvimento desta Entrega
 - **Tempo Estimado de Desenvolvimento:** ~15 a 18 horas (incluindo modelagem de arquitetura, design da interface, construção do web scraper e integração do protótipo no Flask).
 - **Total de Linhas de Código Escritas/Modificadas (Diretório `app/`):** **1.361 linhas**.
 - **Total de Arquivos Criados/Refatorados no Código:** 4 arquivos chave (+ arquivos de documentação).
 
-## 📝 Comentários Técnicos e Alterações (por Augusto)
+##  Comentários Técnicos e Alterações (por Augusto)
 
 ### 1. Backend Unificado (`app/main.py`)
 - **Linhas:** 178 linhas | **Tamanho:** 10 KB
@@ -40,6 +40,6 @@
   - **CRUD Frontend Simulado:** Botões de "+ Novo Aluno", "Editar" e "Excluir" operam ativamente sobre o DOM (modais funcionais preenchem os dados na tabela e ajustam a contagem de KPIs no topo da tela).
   - **Modal de Análise de Risco:** Layout robusto contendo um medidor visual de Score (círculo com cores dinâmicas verde/amarelo/vermelho), recebendo os "Motivos" e "Recomendações" dinamicamente direto da API Flask.
 
-## 🚀 Próximos Passos (Próxima Sprint)
+##  Próximos Passos (Próxima Sprint)
 - Transportar a lógica do `main.py` (Flask) para a estrutura final em **Django** e **Django REST Framework** (conforme RNF02).
 - Levantar o banco MySQL e substituir as rotas de `demo` pela importação real dos 15 CSVs do Guia Didático do Dataset.

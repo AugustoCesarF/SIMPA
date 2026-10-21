@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SIMPA | Dashboard Acadêmico</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #172033;
+        }
+        header {
+            background: #172b4d;
+            color: white;
+            padding: 24px 6%;
+        }
+        header h1 { margin: 0 0 8px; }
+        header p { margin: 0; color: #dbe6f7; }
+        main { max-width: 1200px; margin: 28px auto; padding: 0 20px; }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 18px;
+        }
+        .card, section {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #172b4d0d;
+        }
+        .card p { color: #5b667a; margin: 0 0 12px; }
+        .valor { font-size: 30px; font-weight: bold; }
+        section { margin-top: 24px; overflow-x: auto; }
+        h2 { margin-top: 0; font-size: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e7ebf2;
+        }
+        th { color: #526079; }
+        .vazio { color: #64748b; padding: 12px 0; }
+        .aviso { color: #9a3412; font-weight: bold; }
+        a { color: #1d4ed8; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SIMPA</h1>
+        <p>Sistema Inteligente de Monitoramento e Predição Acadêmica</p>
+    </header>
+
+    <main>
+        <h2>Visão geral acadêmica</h2>
+
+        <div class="cards">
+            <div class="card">
+                <p>Estudantes ativos</p>
+                <div class="valor">{{ total_estudantes }}</div>
+            </div>
+            <div class="card">
+                <p>Turmas ativas</p>
+                <div class="valor">{{ total_turmas }}</div>
+            </div>
+            <div class="card">
+                <p>Registros acadêmicos</p>
+                <div class="valor">{{ total_registros }}</div>
+            </div>
+            <div class="card">
+                <p>Média das notas</p>
+                <div class="valor">
+                    {% if media_notas != None %}
+                        {{ media_notas|floatformat:2 }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card">
+                <p>Frequência média</p>
+                <div class="valor">
+                    {% if media_frequencia != None %}
+                        {{ media_frequencia|floatformat:1 }}%
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <section>
+            <h2>Registros que precisam de atenção</h2>
+            <p>Critérios provisórios: nota abaixo de 6 ou frequência abaixo de 75%.</p>
+
+            {% if registros_atencao %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Estudante</th>
+                            <th>Turma</th>
+                            <th>Período</th>
+                            <th>Nota</th>
+                            <th>Frequência</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registro in registros_atencao %}
+                            <tr>
+                                <td>{{ registro.estudante.nome }}</td>
+                                <td>{{ registro.turma.nome }}</td>
+                                <td>{{ registro.periodo }}</td>
+                                <td>{{ registro.nota }}</td>
+                                <td>{{ registro.frequencia }}%</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="vazio">
+                    {% if total_registros %}
+                        Nenhum registro atende aos critérios provisórios de atenção.
+                    {% else %}
+                        Ainda não há registros acadêmicos para calcular os indicadores.
+                    {% endif %}
+                </p>
+            {% endif %}
+        </section>
+
+        <section>
+            <h2>Últimos registros atualizados</h2>
+            {% if ultimos_registros %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Estudante</th>
+                            <th>Turma</th>
+                            <th>Período</th>
+                            <th>Nota</th>
+                            <th>Frequência</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registro in ultimos_registros %}
+                            <tr>
+                                <td>{{ registro.estudante.nome }}</td>
+                                <td>{{ registro.turma.nome }}</td>
+                                <td>{{ registro.periodo }}</td>
+                                <td>{{ registro.nota }}</td>
+                                <td>{{ registro.frequencia }}%</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="vazio">Cadastre registros para visualizar os resultados.</p>
+            {% endif %}
+        </section>
+
+        <p><a href="/admin/">Acessar administração do SIMPA</a></p>
+    </main>
+</body>
+</html>
