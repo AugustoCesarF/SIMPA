@@ -8,6 +8,7 @@ class Turma(models.Model):
     curso = models.CharField(max_length=150)
     periodo = models.CharField(max_length=30)
     professor = models.CharField(max_length=150, blank=True)
+    carga_horaria = models.PositiveIntegerField(default=60)
     estudantes = models.ManyToManyField(
         "estudantes.Estudante",
         blank=True,
