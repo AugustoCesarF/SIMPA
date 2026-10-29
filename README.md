@@ -24,7 +24,7 @@ Este repositório segue uma estrutura de pastas por entrega, com o código de de
 | [_recursos/](./_recursos/) | 📚 Dataset, guia didático e materiais de apoio |
 
 ---
-## Módulos
+
 ## 🚀 Como executar (Entrega 2 — Backend Django)
 
 # 1. Abra o terminal do Windows e localize a pasta do projeto
