@@ -1,4 +1,4 @@
-# SIMPA — Entrega 3: Módulo Analítico e Inteligência Aplicada
+# SIMPA — Entrega 2: Módulo Analítico e Inteligência Aplicada
 
 > **Status:** 🟢 Semana 13  
 > **Framework:** Django 5.2 + Django REST Framework  
