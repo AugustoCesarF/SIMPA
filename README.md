@@ -57,7 +57,8 @@ Acesse: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 | Frontend | HTML5, CSS3, JavaScript (Vanilla) |
 | Backend | Python 3.14 + Django 5.2 + Django REST Framework |
 | Banco de Dados | MySQL (produção) / PostgreSQL (desenvolvimento) |
-| Scraping AVA | equests + BeautifulSoup4 |
+| Scraping AVA | 
+equests + BeautifulSoup4 |
 | IA / Predição | scikit-learn (Entrega 3) |
 
 ---
@@ -68,7 +69,6 @@ Acesse: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 |---|---|
 | **Augusto** | Líder do Projeto / Backend |
 | **Marcel** | Desenvolvimento |
-| **Davi** | Desenvolvimento |
 | **Nicolas** | Frontend |
 | **Eduardo** | Desenvolvimento |
 | **Gabriel** | Desenvolvimento |
