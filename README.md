@@ -32,21 +32,22 @@ cd C:\caminho\SIMPA-main
 
 # 1. Instale e ative o ambiente virtual
 python -m venv .venv
+
 .venv\Scripts\activate
 
 # 2. Instale as dependências
-pip install -r SIMPA/app/requirements.txt
+pip install -r SIMPA\app\requirements.txt
 
 # 3. Configure o ambiente e edite o .env com suas credenciais do PostgreSQL
 copy SIMPA\django_backend\.env.example SIMPA\django_backend.env
 
 # 4. Rode as migrações
-cd SIMPA/django_backend
+cd SIMPA\django_backend
+
 python manage.py migrate
 
 # 5. Inicie o servidor
 python manage.py runserver
-`
 
 Acesse: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
