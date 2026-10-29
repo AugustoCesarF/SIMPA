@@ -28,7 +28,7 @@ Este repositório segue uma estrutura de pastas por entrega, com o código de de
 ## 🚀 Como executar (Entrega 2 — Backend Django)
 
 # 1. Abra o terminal do Windows e localize a pasta do projeto
-cd C:\caminho\SIMPA-main
+cd C:\caminho\SIMPA-Main
 
 # 1. Instale e ative o ambiente virtual
 python -m venv .venv
