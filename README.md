@@ -24,19 +24,21 @@ Este repositório segue uma estrutura de pastas por entrega, com o código de de
 | [_recursos/](./_recursos/) | 📚 Dataset, guia didático e materiais de apoio |
 
 ---
-
+## Módulos
 ## 🚀 Como executar (Entrega 2 — Backend Django)
 
-`ash
-# 1. Ative o ambiente virtual
+# 1. Abra o terminal do Windows e localize a pasta do projeto
+cd C:\caminho\SIMPA-main
+
+# 1. Instale e ative o ambiente virtual
+python -m venv .venv
 .venv\Scripts\activate
 
 # 2. Instale as dependências
 pip install -r SIMPA/app/requirements.txt
 
-# 3. Configure o ambiente
-copy SIMPA\django_backend\.env.example SIMPA\django_backend\.env
-# Edite o .env com suas credenciais do banco
+# 3. Configure o ambiente e edite o .env com suas credenciais do PostgreSQL
+copy SIMPA\django_backend\.env.example SIMPA\django_backend.env
 
 # 4. Rode as migrações
 cd SIMPA/django_backend
