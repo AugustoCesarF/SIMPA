@@ -1,58 +1,85 @@
 # SIMPA — Entrega 3: Módulo Analítico e Inteligência Aplicada
 
-> **Status:** 🟡 Em desenvolvimento (Semana 13)  
+> **Status:** 🟡 Semana 13  
 > **Framework:** Django 5.2 + Django REST Framework  
 > **Arquitetura:** MVT (Model-View-Template)
 
 ---
 
-## 📐 Arquitetura MVT
+## 🏗️ Estrutura do Projeto (Padrão MVT Django)
 
 ```
-django_backend/
-├── config/                  ← Configuração central (settings, urls)
-│   ├── settings.py
-│   └── urls.py
+Entrega3/
+├── manage.py                  ← Utilitário de comandos Django
+├── requirements.txt           ← Dependências Python
+├── .env.example               ← Modelo de variáveis de ambiente
 │
-├── estudantes/              ← App: Gerenciamento de Estudantes
-│   ├── models.py            ← M — Model (Estudante)
-│   ├── views.py             ← V — View (ViewSet REST)
-│   └── templates/           ← T — Templates (admin)
+├── config/                    ← Configuração central do projeto
+│   ├── settings.py            ← INSTALLED_APPS, DATABASES, etc.
+│   └── urls.py                ← Roteamento principal
 │
-├── turmas/                  ← App: Gerenciamento de Turmas
-│   ├── models.py            ← M — Model (Turma)
-│   ├── views.py             ← V — View (ViewSet REST)
-│   └── templates/           ← T — Templates (admin)
+├── estudantes/                ← App: Cadastro de Estudantes
+│   ├── models.py              ← M — Model (Estudante)
+│   ├── views.py               ← V — View (ViewSet REST)
+│   ├── urls.py                ← Roteamento do app
+│   └── templates/estudantes/  ← T — Templates HTML
 │
-├── registros/               ← App: Registros Acadêmicos (Entrega 2)
-│   ├── models.py            ← M — Model (RegistroAcademico)
-│   ├── views.py             ← V — Views (dashboard + APIs demo)
-│   └── templates/registros/ ← T — Templates HTML
+├── turmas/                    ← App: Cadastro de Turmas
+│   ├── models.py              ← M — Model (Turma)
+│   ├── views.py               ← V — View (ViewSet REST)
+│   ├── urls.py                ← Roteamento do app
+│   └── templates/turmas/      ← T — Templates HTML
 │
-└── analytics/               ← 🆕 App: Módulo Analítico (Entrega 3)
-    ├── models.py            ← M — SnapshotEstatistico
-    ├── services.py          ← Serviço estatístico (média, σ, Pearson)
-    ├── views.py             ← V — Dashboard + APIs JSON
-    ├── urls.py              ← Rotas do módulo
-    └── templates/analytics/ ← T — Dashboard HTML + Chart.js
-        ├── dashboard.html
-        └── relatorio.html
+├── registros/                 ← App: Registros Acadêmicos
+│   ├── models.py              ← M — Model (RegistroAcademico)
+│   ├── views.py               ← V — Views (dashboard + APIs)
+│   ├── urls.py                ← Roteamento do app
+│   └── templates/registros/   ← T — Templates HTML
+│
+└── analytics/                 ← 🆕 App: Módulo Analítico (Entrega 3)
+    ├── models.py              ← M — Model (SnapshotEstatistico)
+    ├── services.py            ← Lógica estatística pura
+    ├── views.py               ← V — Dashboard + APIs JSON
+    ├── urls.py                ← Roteamento do app
+    └── templates/analytics/   ← T — Templates com Chart.js
+        ├── dashboard.html     ← Dashboard analítico
+        └── relatorio.html     ← Relatório por período
 ```
 
 ---
 
-## 📊 Indicadores Estatísticos Implementados
+## 🔄 Fluxo MVT no SIMPA
 
-| Indicador | Função | Objetivo |
+```
+Requisição HTTP
+      ↓
+  urls.py          ← Roteador: direciona para a View correta
+      ↓
+  views.py (V)     ← Processa lógica + chama services.py
+      ↓
+  models.py (M)    ← ORM: lê/escreve no banco de dados
+      ↓
+  views.py (V)     ← Recebe dados do Model
+      ↓
+templates/*.html(T)← Renderiza HTML com dados do contexto
+      ↓
+  Resposta HTML/JSON
+```
+
+---
+
+## 📊 Indicadores Estatísticos (analytics/services.py)
+
+| Função | Indicador | Objetivo |
 |---|---|---|
-| Média Aritmética | `calcular_media()` | Tendência central |
-| Mediana | `calcular_mediana()` | Centro resistente a outliers |
-| Desvio Padrão (σ) | `calcular_desvio_padrao()` | Dispersão das notas |
-| Coef. de Variação (CV) | `calcular_coef_variacao()` | Homogeneidade da turma |
-| Percentis P25, P75 | `calcular_percentil()` | Quartis / boxplot |
-| Correlação de Pearson | `calcular_pearson()` | Relação nota × frequência |
-| Tendência N1→N2→N3 | `calcular_tendencia()` | Evolução do desempenho |
-| Score de Risco | `calcular_risco_aluno()` | Predição heurística (0–100) |
+| `calcular_media()` | Média aritmética | Tendência central |
+| `calcular_mediana()` | Mediana | Centro resistente a outliers |
+| `calcular_desvio_padrao()` | Desvio padrão (σ) | Dispersão das notas |
+| `calcular_coef_variacao()` | Coef. Variação (CV%) | Homogeneidade da turma |
+| `calcular_percentil()` | P25, P50, P75 | Quartis / boxplot |
+| `calcular_pearson()` | Correlação de Pearson r | Nota × frequência |
+| `calcular_tendencia()` | Tendência N1→N2→N3 | Evolução do desempenho |
+| `calcular_risco_aluno()` | Score de risco (0–100) | Predição de risco |
 
 ---
 
@@ -60,48 +87,38 @@ django_backend/
 
 | Rota | Tipo | Descrição |
 |---|---|---|
-| `/analytics/` | Template HTML | Dashboard analítico com Chart.js |
-| `/analytics/relatorio/` | Template HTML | Relatório por período/turma |
-| `/analytics/api/estatisticas/` | JSON | Todos os indicadores gerais |
-| `/analytics/api/turma/<id>/` | JSON | Indicadores de uma turma |
-| `/analytics/api/aluno/<id>/risco/` | JSON | Score de risco individual |
-| `/analytics/api/correlacao/` | JSON | Pearson nota × frequência |
+| `/analytics/` | Template HTML | Dashboard com Chart.js |
+| `/analytics/relatorio/` | Template HTML | Relatório por período |
+| `/analytics/api/estatisticas/` | JSON | Todos os indicadores |
+| `/analytics/api/turma/<id>/` | JSON | Stats por turma |
+| `/analytics/api/aluno/<id>/risco/` | JSON | Score de risco |
+| `/analytics/api/correlacao/` | JSON | Pearson r geral |
 
 ---
 
 ## 🚀 Como Rodar
 
 ```bash
-cd Entrega3/django_backend
+# 1. Instalar dependências
+pip install -r requirements.txt
 
-# Instalar dependências
-pip install django djangorestframework python-dotenv psycopg2-binary
-
-# Configurar variáveis de ambiente
+# 2. Configurar variáveis de ambiente
 cp .env.example .env
-# Edite o .env com suas credenciais de banco
+# Editar .env com suas credenciais
 
-# Aplicar migrações
+# 3. Aplicar migrações
 python manage.py migrate
 
-# Iniciar servidor
+# 4. Iniciar servidor
 python manage.py runserver
 ```
 
-Acesse em: http://127.0.0.1:8000/analytics/
-
----
-
-## 🎨 Visualizações (Chart.js)
-
-- **Histograma** — Distribuição de notas por faixa (0-1, 1-2, ..., 9-10)
-- **Scatter Plot** — Correlação visual nota × frequência
-- **Barras** — Média por turma com linha de corte (6.0)
-- **Donut** — Taxa de aprovação por turma
+Acesse: http://127.0.0.1:8000/analytics/
 
 ---
 
 ## 🔒 Segurança
 
-A `SECRET_KEY` e credenciais de banco são carregadas via `.env` (não versionado).  
-Veja `.env.example` para configuração.
+- `SECRET_KEY` carregada via `.env` (não versionado)
+- `.env` listado no `.gitignore`
+- Veja `.env.example` como modelo de configuração
