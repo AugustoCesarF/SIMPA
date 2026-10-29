@@ -361,15 +361,90 @@ DEMO_MATRICULAS = [
 ]
 
 def demo_alunos(request):
+    estudantes = Estudante.objects.filter(ativo=True).order_by("nome")
+    if estudantes.exists():
+        data = [
+            {
+                "id": e.id,
+                "nome": e.nome,
+                "ra": e.matricula,
+                "email": e.email,
+                "turma": e.curso or "Engenharia de Software / IA",
+            }
+            for e in estudantes
+        ]
+        return JsonResponse(data, safe=False)
     return JsonResponse(DEMO_ALUNOS, safe=False)
 
 def demo_disciplinas(request):
+    turmas = Turma.objects.filter(ativa=True).order_by("codigo")
+    if turmas.exists():
+        data = [
+            {
+                "id": t.id,
+                "nome": t.nome,
+                "codigo": t.codigo,
+                "carga_horaria": t.carga_horaria or 60,
+                "professor": t.professor or "Prof. Titular",
+            }
+            for t in turmas
+        ]
+        return JsonResponse(data, safe=False)
     return JsonResponse(DEMO_DISCIPLINAS, safe=False)
 
 def demo_matriculas(request):
+    registros = RegistroAcademico.objects.select_related("estudante", "turma").order_by("-atualizado_em")[:200]
+    if registros.exists():
+        data = []
+        for reg in registros:
+            nota_val = float(reg.nota) if reg.nota is not None else 0.0
+            freq_val = float(reg.frequencia) if reg.frequencia is not None else 100.0
+            if reg.situacao_original:
+                sit = reg.situacao_original.upper()
+                if "APROVADO" in sit:
+                    situacao = "Aprovado"
+                elif "REPROVADO" in sit:
+                    situacao = "Reprovado"
+                elif "RECUPERA" in sit:
+                    situacao = "Recuperação"
+                else:
+                    situacao = "Em Curso"
+            else:
+                if nota_val >= 6.0 and freq_val >= 75.0:
+                    situacao = "Aprovado"
+                elif nota_val >= 4.0:
+                    situacao = "Recuperação"
+                else:
+                    situacao = "Reprovado"
+
+            faltas = max(0, int(round((100.0 - freq_val) * 0.2)))
+            data.append({
+                "aluno_id": reg.estudante_id,
+                "aluno": reg.estudante.nome,
+                "disciplina": reg.turma.nome,
+                "n1": round(nota_val * 0.95, 1),
+                "n2": round(nota_val * 1.05, 1),
+                "n3": round(nota_val, 1),
+                "faltas": faltas,
+                "media": round(nota_val, 1),
+                "situacao": situacao,
+            })
+        return JsonResponse(data, safe=False)
     return JsonResponse(DEMO_MATRICULAS, safe=False)
 
 def demo_kpis(request):
+    if RegistroAcademico.objects.exists():
+        total_alunos = Estudante.objects.filter(ativo=True).count()
+        avg_nota = RegistroAcademico.objects.filter(nota__isnull=False).aggregate(Avg("nota"))["nota__avg"]
+        media_geral = round(float(avg_nota), 1) if avg_nota is not None else 0.0
+        aprovados = RegistroAcademico.objects.filter(nota__gte=6.0, frequencia__gte=75.0).count()
+        reprovados = RegistroAcademico.objects.filter(Q(nota__lt=6.0) | Q(frequencia__lt=75.0)).count()
+        return JsonResponse({
+            "total_alunos": total_alunos,
+            "media_geral": media_geral,
+            "aprovados": aprovados,
+            "reprovados_recuperacao": reprovados,
+        })
     medias = [m["media"] for m in DEMO_MATRICULAS]
     aprovados = sum(1 for m in DEMO_MATRICULAS if m["situacao"] == "Aprovado")
     reprovados = sum(1 for m in DEMO_MATRICULAS if m["situacao"] in ("Reprovado", "Recuperação"))
@@ -439,6 +514,9 @@ def calcular_risco_demo(aluno_id):
     return {"nivel": nivel, "score": score, "motivos": motivos, "recomendacoes": recomendacoes}
 
 def demo_risco(request, aluno_id):
+    estudante = Estudante.objects.filter(id=aluno_id).prefetch_related("registros_academicos").first()
+    if estudante:
+        return JsonResponse(_calcular_risco_estudante(estudante))
     aluno = next((a for a in DEMO_ALUNOS if a["id"] == aluno_id), None)
     if not aluno:
         return JsonResponse({"error": "Aluno não encontrado"}, status=404)
@@ -446,3 +524,4 @@ def demo_risco(request, aluno_id):
     risco["aluno"] = aluno["nome"]
     risco["ra"] = aluno["ra"]
     return JsonResponse(risco)
+

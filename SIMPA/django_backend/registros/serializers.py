@@ -53,12 +53,12 @@ class RegistroAcademicoSerializer(serializers.ModelSerializer):
             return False
 
     def validate_nota(self, value):
-        if value < Decimal("0.00") or value > Decimal("10.00"):
+        if value is not None and (value < Decimal("0.00") or value > Decimal("10.00")):
             raise serializers.ValidationError("A nota deve estar entre 0.00 e 10.00.")
         return value
 
     def validate_frequencia(self, value):
-        if value < Decimal("0.00") or value > Decimal("100.00"):
+        if value is not None and (value < Decimal("0.00") or value > Decimal("100.00")):
             raise serializers.ValidationError("A frequência deve estar entre 0.00% e 100.00%.")
         return value
 

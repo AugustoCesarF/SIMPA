@@ -3,6 +3,7 @@ from django.urls import include, path
 from rest_framework.authtoken.views import obtain_auth_token
 from config.auth_views import LoginTokenView, LogoutTokenView, MeView
 from registros.views import api_indicadores, api_relatorios, api_risco_aluno
+from comunidade.views import PerfilUsuarioView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -19,6 +20,12 @@ urlpatterns = [
     path("api/alunos/", include("estudantes.urls")),
     path("api/turmas/", include("turmas.urls")),
     path("api/registros/", include("registros.api_urls")),
+
+    # IE01 — Avatar e Perfil
+    path("api/perfil/", PerfilUsuarioView.as_view(), name="api_perfil"),
+
+    # IE02 e IE03 — Comunidade e Integração WhatsApp
+    path("api/comunidade/", include("comunidade.urls")),
 
     # Indicadores, Relatórios e Predição de Risco
     path("api/indicadores/", api_indicadores, name="api_indicadores"),

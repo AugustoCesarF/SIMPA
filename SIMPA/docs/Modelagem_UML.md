@@ -26,6 +26,10 @@ flowchart TD
         UC08["UC08: Visualizar Dashboard e Relatórios de Desempenho"]
         UC09["UC09: Consultar Predição e Motivos de Risco Acadêmico"]
         UC10["UC10: Sincronizar Dados do AVA via Web Scraping"]
+        UC11["UC11: Visualizar e Editar Perfil e Avatar (IE01)"]
+        UC12["UC12: Publicar e Responder Dúvidas na Comunidade (IE02)"]
+        UC13["UC13: Enviar Alertas e Notificações via WhatsApp (IE03)"]
+        UC14["UC14: Cadastrar e Consultar Local da Aula (IE04)"]
     end
 
     Admin --> UC01
@@ -37,6 +41,10 @@ flowchart TD
     Admin --> UC07
     Admin --> UC08
     Admin --> UC09
+    Admin --> UC11
+    Admin --> UC12
+    Admin --> UC13
+    Admin --> UC14
 
     Professor --> UC01
     Professor --> UC02
@@ -44,11 +52,18 @@ flowchart TD
     Professor --> UC06
     Professor --> UC07
     Professor --> UC09
+    Professor --> UC11
+    Professor --> UC12
+    Professor --> UC13
+    Professor --> UC14
 
     Aluno --> UC01
     Aluno --> UC08
     Aluno --> UC09
     Aluno --> UC10
+    Aluno --> UC11
+    Aluno --> UC12
+    Aluno --> UC14
 
     UC01 -.->|<<include>>| UC02
     UC09 -.->|<<include>>| UC07

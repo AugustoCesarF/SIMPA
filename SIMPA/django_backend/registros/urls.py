@@ -17,14 +17,22 @@ def painel_aluno_original(request):
 
 
 urlpatterns = [
-    path("", views.dashboard, name="dashboard"),
-    path("login-original/", login_original, name="login_original"),
+    # HUD Principal do SIMPA (Interface Moderna / Dark UI)
+    path("", dashboard_original, name="home"),
+    path("dashboard/", dashboard_original, name="dashboard"),
     path("dashboard-original/", dashboard_original, name="dashboard_original"),
-    path("painel-aluno/", painel_aluno_original, name="painel_aluno_original"),
+    path("login/", login_original, name="login"),
+    path("login-original/", login_original, name="login_original"),
+    path("painel-aluno/", painel_aluno_original, name="painel_aluno"),
 
+    # Tabela administrativa resumo (legado)
+    path("admin-resumo/", views.dashboard, name="dashboard_resumo"),
+
+    # Endpoints dinâmicos consumidos pela HUD
     path("api/demo/alunos", views.demo_alunos, name="demo_alunos"),
     path("api/demo/disciplinas", views.demo_disciplinas, name="demo_disciplinas"),
     path("api/demo/matriculas", views.demo_matriculas, name="demo_matriculas"),
     path("api/demo/kpis", views.demo_kpis, name="demo_kpis"),
     path("api/demo/risco/<int:aluno_id>", views.demo_risco, name="demo_risco"),
 ]
+

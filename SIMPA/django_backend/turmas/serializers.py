@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Turma
+from .models import Turma, LocalAula
 from estudantes.models import Estudante
 
 
@@ -9,13 +9,40 @@ class EstudanteSimplesSerializer(serializers.ModelSerializer):
         fields = ["id", "nome", "matricula", "email", "ativo"]
 
 
+class LocalAulaSerializer(serializers.ModelSerializer):
+    """
+    IE04 — Serializer para Cadastro e Visualização do Local de Aula.
+    """
+    class Meta:
+        model = LocalAula
+        fields = "__all__"
+
+    def validate_sala(self, value):
+        sala = value.strip()
+        if not sala:
+            raise serializers.ValidationError("A identificação da sala é obrigatória.")
+        return sala
+
+    def validate_bloco(self, value):
+        bloco = value.strip()
+        if not bloco:
+            raise serializers.ValidationError("O bloco/prédio é obrigatório.")
+        return bloco
+
+
 class TurmaSerializer(serializers.ModelSerializer):
     total_estudantes = serializers.SerializerMethodField(read_only=True)
     estudantes_detalhes = EstudanteSimplesSerializer(source="estudantes", many=True, read_only=True)
+    local_aula_detalhes = LocalAulaSerializer(source="local_aula", read_only=True)
     estudantes = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Estudante.objects.all(),
         required=False,
+    )
+    local_aula = serializers.PrimaryKeyRelatedField(
+        queryset=LocalAula.objects.all(),
+        required=False,
+        allow_null=True,
     )
 
     class Meta:
@@ -28,13 +55,18 @@ class TurmaSerializer(serializers.ModelSerializer):
             "periodo",
             "professor",
             "carga_horaria",
+            "local_aula",
+            "local_aula_detalhes",
+            "horario",
+            "dia_semana",
+            "link_grupo_whatsapp",
             "ativa",
             "criada_em",
             "total_estudantes",
             "estudantes",
             "estudantes_detalhes",
         ]
-        read_only_fields = ["id", "criada_em", "total_estudantes", "estudantes_detalhes"]
+        read_only_fields = ["id", "criada_em", "total_estudantes", "estudantes_detalhes", "local_aula_detalhes"]
 
     def get_total_estudantes(self, obj):
         return obj.estudantes.count()
