@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIMPA — Dashboard Analítico</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: 220px; height: 100vh;
+      background: #1e293b;
+      padding: 24px 16px;
+      display: flex; flex-direction: column; gap: 8px;
+      border-right: 1px solid #334155;
+      z-index: 100;
+    }
+    .sidebar-brand {
+      font-size: 1.3rem; font-weight: 700;
+      color: #38bdf8; margin-bottom: 24px;
+      letter-spacing: 1px;
+    }
+    .sidebar a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 8px;
+      color: #94a3b8; text-decoration: none;
+      font-size: 0.9rem; transition: all 0.15s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background: #0f172a; color: #38bdf8;
+    }
+
+    /* ── Main ── */
+    .main { margin-left: 220px; padding: 32px; }
+
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: #64748b; margin-bottom: 32px; font-size: 0.9rem; }
+
+    /* ── KPI Cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-bottom: 32px;
+    }
+    .kpi-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #334155;
+    }
+    .kpi-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .kpi-value { font-size: 2rem; font-weight: 700; }
+    .kpi-value.green { color: #4ade80; }
+    .kpi-value.blue  { color: #38bdf8; }
+    .kpi-value.yellow{ color: #fbbf24; }
+    .kpi-value.red   { color: #f87171; }
+    .kpi-sub { font-size: 0.75rem; color: #64748b; margin-top: 4px; }
+
+    /* ── Charts Grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px; margin-bottom: 32px;
+    }
+    .charts-grid.full { grid-template-columns: 1fr; }
+
+    .chart-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid #334155;
+    }
+    .chart-title {
+      font-size: 0.9rem; font-weight: 600;
+      color: #94a3b8; margin-bottom: 4px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .chart-subtitle { font-size: 0.75rem; color: #475569; margin-bottom: 16px; }
+    .chart-container { position: relative; height: 260px; }
+
+    /* ── Stat Detail Grid ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px; margin-bottom: 32px;
+    }
+    .stat-item {
+      background: #1e293b;
+      border-radius: 10px; padding: 16px;
+      border: 1px solid #334155;
+    }
+    .stat-item label { font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 4px; }
+    .stat-item .val { font-size: 1.3rem; font-weight: 600; color: #e2e8f0; }
+    .stat-item .hint { font-size: 0.7rem; color: #475569; margin-top: 2px; }
+
+    /* ── Interpretação ── */
+    .interpretacao {
+      background: #1e293b;
+      border-radius: 12px; padding: 24px;
+      border-left: 4px solid #38bdf8;
+      margin-bottom: 32px;
+    }
+    .interpretacao h3 { font-size: 0.9rem; color: #38bdf8; margin-bottom: 12px; text-transform: uppercase; }
+    .interpretacao ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .interpretacao li { font-size: 0.9rem; color: #cbd5e1; line-height: 1.5; }
+
+    /* ── Badge risco ── */
+    .badge {
+      display: inline-block; padding: 2px 10px;
+      border-radius: 99px; font-size: 0.7rem; font-weight: 600;
+    }
+    .badge-verde  { background: #14532d; color: #4ade80; }
+    .badge-amarelo{ background: #713f12; color: #fbbf24; }
+    .badge-vermelho{ background: #7f1d1d; color: #f87171; }
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 16px; }
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-brand">📊 SIMPA</div>
+  <a href="/" >🏠 Início</a>
+  <a href="/analytics/" class="active">📈 Analítico</a>
+  <a href="/analytics/relatorio/">📋 Relatório</a>
+  <a href="/analytics/api/estatisticas/">🔌 API JSON</a>
+  <a href="/admin/">⚙️ Admin</a>
+</nav>
+
+<!-- Conteúdo principal -->
+<main class="main">
+  <h1>Dashboard Analítico</h1>
+  <p class="subtitle">Módulo Analítico — SIMPA Entrega 3 &nbsp;·&nbsp; Estatística Descritiva &amp; Indicadores de Risco</p>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Alunos Ativos</div>
+      <div class="kpi-value blue">{{ total_estudantes }}</div>
+      <div class="kpi-sub">cadastrados no sistema</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Turmas Ativas</div>
+      <div class="kpi-value blue">{{ total_turmas }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Registros</div>
+      <div class="kpi-value blue">{{ total_registros }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Média Geral</div>
+      <div class="kpi-value {% if stats.media_notas >= 7 %}green{% elif stats.media_notas >= 5 %}yellow{% else %}red{% endif %}">
+        {{ stats.media_notas|floatformat:1 }}
+      </div>
+      <div class="kpi-sub">σ = {{ stats.desvio_padrao|floatformat:2 }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Taxa de Aprovação</div>
+      <div class="kpi-value {% if stats.taxa_aprovacao >= 70 %}green{% elif stats.taxa_aprovacao >= 50 %}yellow{% else %}red{% endif %}">
+        {{ stats.taxa_aprovacao|floatformat:1 }}%
+      </div>
+      <div class="kpi-sub">{{ stats.aprovados }} aprovados / {{ stats.total_alunos }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Correlação r</div>
+      <div class="kpi-value {% if stats.correlacao_nota_frequencia > 0.5 %}green{% elif stats.correlacao_nota_frequencia > 0.2 %}yellow{% else %}red{% endif %}">
+        {{ stats.correlacao_nota_frequencia|floatformat:3 }}
+      </div>
+      <div class="kpi-sub">Pearson nota × frequência</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Coef. Variação</div>
+      <div class="kpi-value {% if stats.coef_variacao < 15 %}green{% elif stats.coef_variacao < 30 %}yellow{% else %}red{% endif %}">
+        {{ stats.coef_variacao|floatformat:1 }}%
+      </div>
+      <div class="kpi-sub">Homogeneidade da turma</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Mediana</div>
+      <div class="kpi-value blue">{{ stats.mediana_notas|floatformat:1 }}</div>
+      <div class="kpi-sub">P25={{ stats.percentil_25 }} · P75={{ stats.percentil_75 }}</div>
+    </div>
+  </div>
+
+  <!-- Gráficos linha 1 -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Distribuição de Notas</div>
+      <div class="chart-subtitle">Histograma — frequência por faixa de nota</div>
+      <div class="chart-container">
+        <canvas id="chartHistograma"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Correlação Nota × Frequência</div>
+      <div class="chart-subtitle">Scatter plot — r de Pearson = {{ stats.correlacao_nota_frequencia|floatformat:3 }}</div>
+      <div class="chart-container">
+        <canvas id="chartScatter"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráficos linha 2 -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Média por Turma</div>
+      <div class="chart-subtitle">Comparativo de desempenho médio entre turmas</div>
+      <div class="chart-container">
+        <canvas id="chartTurmas"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Taxa de Aprovação por Turma</div>
+      <div class="chart-subtitle">Percentual de aprovação por turma (%)</div>
+      <div class="chart-container">
+        <canvas id="chartAprovacao"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estatísticas Detalhadas -->
+  <h2 style="font-size:1rem; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:16px;">
+    📐 Estatísticas Descritivas
+  </h2>
+  <div class="stat-grid">
+    <div class="stat-item">
+      <label>Média Aritmética</label>
+      <div class="val">{{ stats.media_notas|floatformat:2 }}</div>
+      <div class="hint">Tendência central</div>
+    </div>
+    <div class="stat-item">
+      <label>Mediana</label>
+      <div class="val">{{ stats.mediana_notas|floatformat:2 }}</div>
+      <div class="hint">Valor do meio (50º percentil)</div>
+    </div>
+    <div class="stat-item">
+      <label>Desvio Padrão (σ)</label>
+      <div class="val">{{ stats.desvio_padrao|floatformat:2 }}</div>
+      <div class="hint">Dispersão das notas</div>
+    </div>
+    <div class="stat-item">
+      <label>Coeficiente de Variação</label>
+      <div class="val">{{ stats.coef_variacao|floatformat:1 }}%</div>
+      <div class="hint">Dispersão relativa (CV)</div>
+    </div>
+    <div class="stat-item">
+      <label>Nota Mínima</label>
+      <div class="val">{{ stats.nota_minima|floatformat:1 }}</div>
+    </div>
+    <div class="stat-item">
+      <label>Nota Máxima</label>
+      <div class="val">{{ stats.nota_maxima|floatformat:1 }}</div>
+    </div>
+    <div class="stat-item">
+      <label>1º Quartil (P25)</label>
+      <div class="val">{{ stats.percentil_25|floatformat:2 }}</div>
+      <div class="hint">25% dos alunos abaixo</div>
+    </div>
+    <div class="stat-item">
+      <label>3º Quartil (P75)</label>
+      <div class="val">{{ stats.percentil_75|floatformat:2 }}</div>
+      <div class="hint">75% dos alunos abaixo</div>
+    </div>
+    <div class="stat-item">
+      <label>Freq. Média</label>
+      <div class="val">{{ stats.media_frequencia|floatformat:1 }}%</div>
+    </div>
+    <div class="stat-item">
+      <label>σ Frequência</label>
+      <div class="val">{{ stats.desvio_frequencia|floatformat:2 }}</div>
+    </div>
+    <div class="stat-item">
+      <label>Aprovados</label>
+      <div class="val" style="color:#4ade80">{{ stats.aprovados }}</div>
+    </div>
+    <div class="stat-item">
+      <label>Recuperação / Reprovados</label>
+      <div class="val" style="color:#f87171">{{ stats.recuperacao }} / {{ stats.reprovados }}</div>
+    </div>
+  </div>
+
+  <!-- Interpretação automática -->
+  <div class="interpretacao">
+    <h3>🤖 Interpretação Automática dos Indicadores</h3>
+    <ul>
+      {% for msg in interpretacoes %}
+        <li>{{ msg }}</li>
+      {% empty %}
+        <li>Sem dados suficientes para interpretação.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+</main>
+
+<!-- ═══ Chart.js Scripts ═══ -->
+<script>
+const CHART_DEFAULTS = {
+  color: '#94a3b8',
+  borderColor: '#334155',
+  plugins: {
+    legend: { labels: { color: '#94a3b8' } },
+    tooltip: { backgroundColor: '#1e293b', titleColor: '#e2e8f0', bodyColor: '#94a3b8' }
+  },
+  scales: {
+    x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
+    y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } }
+  }
+};
+
+// ── Histograma de Notas ──
+const histLabels = {{ histograma_labels_json|safe }};
+const histDados  = {{ histograma_dados_json|safe }};
+
+new Chart(document.getElementById('chartHistograma'), {
+  type: 'bar',
+  data: {
+    labels: histLabels,
+    datasets: [{
+      label: 'Nº de alunos',
+      data: histDados,
+      backgroundColor: histDados.map((_, i) => i < 5 ? '#ef444480' : '#4ade8080'),
+      borderColor:     histDados.map((_, i) => i < 5 ? '#ef4444' : '#4ade80'),
+      borderWidth: 1, borderRadius: 4,
+    }]
+  },
+  options: {
+    ...CHART_DEFAULTS,
+    plugins: {
+      ...CHART_DEFAULTS.plugins,
+      annotation: {},
+    },
+    scales: {
+      x: { ...CHART_DEFAULTS.scales.x, title: { display: true, text: 'Faixa de Nota', color: '#64748b' }},
+      y: { ...CHART_DEFAULTS.scales.y, title: { display: true, text: 'Quantidade de Alunos', color: '#64748b' }, beginAtZero: true }
+    }
+  }
+});
+
+// ── Scatter Nota × Frequência ──
+const scatterDados = {{ scatter_json|safe }};
+new Chart(document.getElementById('chartScatter'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: 'Aluno',
+      data: scatterDados,
+      backgroundColor: '#38bdf880',
+      borderColor: '#38bdf8',
+      pointRadius: 6,
+      pointHoverRadius: 8,
+    }]
+  },
+  options: {
+    ...CHART_DEFAULTS,
+    scales: {
+      x: { ...CHART_DEFAULTS.scales.x, title: { display: true, text: 'Frequência (%)', color: '#64748b' }, min: 0, max: 100 },
+      y: { ...CHART_DEFAULTS.scales.y, title: { display: true, text: 'Nota', color: '#64748b'  }, min: 0, max: 10 }
+    },
+    plugins: {
+      ...CHART_DEFAULTS.plugins,
+      tooltip: {
+        ...CHART_DEFAULTS.plugins.tooltip,
+        callbacks: {
+          label: ctx => `${ctx.raw.label}: nota=${ctx.raw.y}, freq=${ctx.raw.x}%`
+        }
+      }
+    }
+  }
+});
+
+// ── Média por Turma ──
+const turmasLabels  = {{ turmas_labels_json|safe }};
+const turmasMedias  = {{ turmas_medias_json|safe }};
+new Chart(document.getElementById('chartTurmas'), {
+  type: 'bar',
+  data: {
+    labels: turmasLabels,
+    datasets: [{
+      label: 'Média da Turma',
+      data: turmasMedias,
+      backgroundColor: '#6366f180',
+      borderColor: '#6366f1',
+      borderWidth: 2, borderRadius: 4,
+    }, {
+      label: 'Mínimo aprovação (6.0)',
+      data: turmasLabels.map(() => 6),
+      type: 'line',
+      borderColor: '#fbbf24',
+      borderDash: [5, 5],
+      pointRadius: 0,
+      fill: false,
+    }]
+  },
+  options: {
+    ...CHART_DEFAULTS,
+    scales: {
+      x: { ...CHART_DEFAULTS.scales.x },
+      y: { ...CHART_DEFAULTS.scales.y, min: 0, max: 10 }
+    }
+  }
+});
+
+// ── Taxa de Aprovação por Turma ──
+const turmasAprovacao = {{ turmas_aprovacao_json|safe }};
+new Chart(document.getElementById('chartAprovacao'), {
+  type: 'doughnut',
+  data: {
+    labels: turmasLabels,
+    datasets: [{
+      label: 'Taxa Aprovação (%)',
+      data: turmasAprovacao,
+      backgroundColor: ['#4ade8080','#38bdf880','#a78bfa80','#fbbf2480','#f8717180'],
+      borderColor:     ['#4ade80',  '#38bdf8',  '#a78bfa',  '#fbbf24',  '#f87171'],
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    plugins: {
+      ...CHART_DEFAULTS.plugins,
+      tooltip: {
+        ...CHART_DEFAULTS.plugins.tooltip,
+        callbacks: { label: ctx => `${ctx.label}: ${ctx.raw.toFixed(1)}%` }
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>

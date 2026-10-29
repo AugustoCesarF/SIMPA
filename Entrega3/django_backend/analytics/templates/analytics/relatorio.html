@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIMPA — Relatório Analítico</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: 220px; height: 100vh;
+      background: #1e293b; padding: 24px 16px;
+      border-right: 1px solid #334155; z-index: 100;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .sidebar-brand { font-size: 1.3rem; font-weight: 700; color: #38bdf8; margin-bottom: 24px; }
+    .sidebar a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 8px;
+      color: #94a3b8; text-decoration: none; font-size: 0.9rem;
+    }
+    .sidebar a:hover, .sidebar a.active { background: #0f172a; color: #38bdf8; }
+    .main { margin-left: 220px; padding: 32px; }
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: #64748b; margin-bottom: 24px; font-size: 0.9rem; }
+
+    /* Filtro de período */
+    .filtro-form {
+      display: flex; gap: 12px; align-items: center;
+      background: #1e293b; padding: 16px 20px;
+      border-radius: 10px; margin-bottom: 28px;
+      border: 1px solid #334155;
+    }
+    .filtro-form label { font-size: 0.85rem; color: #94a3b8; }
+    .filtro-form select {
+      background: #0f172a; color: #e2e8f0;
+      border: 1px solid #334155; border-radius: 6px;
+      padding: 8px 12px; font-size: 0.9rem;
+    }
+    .filtro-form button {
+      background: #38bdf8; color: #0f172a;
+      border: none; border-radius: 6px;
+      padding: 8px 18px; font-weight: 600;
+      cursor: pointer; font-size: 0.9rem;
+    }
+
+    /* Cards */
+    .card { background: #1e293b; border-radius: 12px; padding: 24px; border: 1px solid #334155; margin-bottom: 20px; }
+    .card-title { font-size: 0.9rem; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; font-weight: 600; }
+
+    /* Tabela */
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; padding: 10px 12px; color: #64748b; border-bottom: 1px solid #334155; font-weight: 500; }
+    td { padding: 10px 12px; border-bottom: 1px solid #1e293b80; }
+    tr:hover td { background: #0f172a40; }
+
+    /* Alertas de interpretação */
+    .alert { padding: 12px 16px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 8px; }
+    .alert-ok  { background: #14532d40; border-left: 3px solid #4ade80; color: #4ade80; }
+    .alert-warn{ background: #713f1240; border-left: 3px solid #fbbf24; color: #fbbf24; }
+    .alert-danger{ background: #7f1d1d40; border-left: 3px solid #f87171; color: #f87171; }
+
+    .chart-container { position: relative; height: 250px; }
+  </style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-brand">📊 SIMPA</div>
+  <a href="/">🏠 Início</a>
+  <a href="/analytics/">📈 Analítico</a>
+  <a href="/analytics/relatorio/" class="active">📋 Relatório</a>
+  <a href="/analytics/api/estatisticas/">🔌 API JSON</a>
+  <a href="/admin/">⚙️ Admin</a>
+</nav>
+
+<main class="main">
+  <h1>Relatório Analítico</h1>
+  <p class="subtitle">Análise estatística detalhada por período e turma</p>
+
+  <!-- Filtro -->
+  <form method="GET" class="filtro-form">
+    <label>Filtrar por período:</label>
+    <select name="periodo">
+      <option value="">Todos os períodos</option>
+      {% for p in periodos %}
+        <option value="{{ p }}" {% if p == periodo_selecionado %}selected{% endif %}>{{ p }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Filtrar</button>
+  </form>
+
+  <!-- Indicadores Gerais -->
+  <div class="card">
+    <div class="card-title">📐 Indicadores Gerais
+      {% if periodo_selecionado %}— Período: {{ periodo_selecionado }}{% endif %}
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Indicador</th><th>Valor</th><th>Interpretação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Média Geral</td><td><strong>{{ stats_gerais.media_notas|floatformat:2 }}</strong></td>
+          <td>{% if stats_gerais.media_notas >= 7 %}✅ Boa{% elif stats_gerais.media_notas >= 5 %}⚠️ Regular{% else %}🚨 Baixa{% endif %}</td></tr>
+        <tr><td>Mediana</td><td>{{ stats_gerais.mediana_notas|floatformat:2 }}</td><td>50% dos alunos abaixo deste valor</td></tr>
+        <tr><td>Desvio Padrão (σ)</td><td>{{ stats_gerais.desvio_padrao|floatformat:2 }}</td><td>Dispersão das notas</td></tr>
+        <tr><td>Coef. Variação (CV)</td><td>{{ stats_gerais.coef_variacao|floatformat:1 }}%</td>
+          <td>{% if stats_gerais.coef_variacao < 15 %}Turma homogênea{% elif stats_gerais.coef_variacao < 30 %}Dispersão moderada{% else %}Turma heterogênea{% endif %}</td></tr>
+        <tr><td>1º Quartil (P25)</td><td>{{ stats_gerais.percentil_25|floatformat:2 }}</td><td>25% dos alunos abaixo</td></tr>
+        <tr><td>3º Quartil (P75)</td><td>{{ stats_gerais.percentil_75|floatformat:2 }}</td><td>75% dos alunos abaixo</td></tr>
+        <tr><td>Correlação Pearson (r)</td><td>{{ stats_gerais.correlacao_nota_frequencia|floatformat:4 }}</td>
+          <td>Relação nota × frequência</td></tr>
+        <tr><td>Taxa de Aprovação</td><td>{{ stats_gerais.taxa_aprovacao|floatformat:1 }}%</td>
+          <td>{{ stats_gerais.aprovados }} de {{ stats_gerais.total_alunos }} alunos</td></tr>
+        <tr><td>Freq. Média</td><td>{{ stats_gerais.media_frequencia|floatformat:1 }}%</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Interpretação automática -->
+  <div class="card">
+    <div class="card-title">🤖 Interpretação Automática</div>
+    {% for msg in interpretacoes_gerais %}
+      <div class="alert {% if '✅' in msg %}alert-ok{% elif '⚠️' in msg %}alert-warn{% else %}alert-danger{% endif %}">
+        {{ msg }}
+      </div>
+    {% empty %}
+      <p style="color:#64748b">Sem dados suficientes.</p>
+    {% endfor %}
+  </div>
+
+  <!-- Scatter Chart -->
+  <div class="card">
+    <div class="card-title">📍 Scatter — Nota × Frequência</div>
+    <div class="chart-container">
+      <canvas id="chartScatterRelatorio"></canvas>
+    </div>
+  </div>
+
+  <!-- Por Turma -->
+  {% for item in turmas_dados %}
+  <div class="card">
+    <div class="card-title">🎓 {{ item.turma.codigo }} — {{ item.turma.nome }}</div>
+    <table>
+      <tbody>
+        <tr><td>Média</td><td><strong>{{ item.stats.media_notas|floatformat:2 }}</strong></td>
+            <td>σ = {{ item.stats.desvio_padrao|floatformat:2 }} · CV = {{ item.stats.coef_variacao|floatformat:1 }}%</td></tr>
+        <tr><td>Mediana</td><td>{{ item.stats.mediana_notas|floatformat:2 }}</td><td>—</td></tr>
+        <tr><td>P25 / P75</td><td>{{ item.stats.percentil_25|floatformat:1 }} / {{ item.stats.percentil_75|floatformat:1 }}</td><td>—</td></tr>
+        <tr><td>Taxa Aprovação</td><td>{{ item.stats.taxa_aprovacao|floatformat:1 }}%</td>
+            <td>{{ item.stats.aprovados }}✅ · {{ item.stats.recuperacao }}⚠️ · {{ item.stats.reprovados }}❌</td></tr>
+        <tr><td>Correlação r</td><td>{{ item.stats.correlacao_nota_frequencia|floatformat:4 }}</td><td>Pearson nota×freq</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px">
+      {% for msg in item.interpretacoes %}
+        <div class="alert {% if '✅' in msg %}alert-ok{% elif '⚠️' in msg %}alert-warn{% else %}alert-danger{% endif %}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% empty %}
+    <div class="card"><p style="color:#64748b">Nenhuma turma com dados para o período selecionado.</p></div>
+  {% endfor %}
+</main>
+
+<script>
+const scatterDadosRelatorio = {{ scatter_json|safe }};
+new Chart(document.getElementById('chartScatterRelatorio'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: 'Aluno (freq × nota)',
+      data: scatterDadosRelatorio,
+      backgroundColor: '#a78bfa80',
+      borderColor: '#a78bfa',
+      pointRadius: 6,
+    }]
+  },
+  options: {
+    plugins: {
+      legend: { labels: { color: '#94a3b8' } },
+      tooltip: {
+        backgroundColor: '#1e293b',
+        callbacks: { label: c => `${c.raw.label}: nota=${c.raw.y}, freq=${c.raw.x}%` }
+      }
+    },
+    scales: {
+      x: { ticks: { color: '#64748b' }, grid: { color: '#334155' },
+           title: { display: true, text: 'Frequência (%)', color: '#64748b' }, min: 0, max: 100 },
+      y: { ticks: { color: '#64748b' }, grid: { color: '#334155' },
+           title: { display: true, text: 'Nota', color: '#64748b'  }, min: 0, max: 10 }
+    }
+  }
+});
+</script>
+</body>
+</html>
