@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SIMPA — Locais de Aula & Grupos WhatsApp</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: 220px; height: 100vh;
+      background: #1e293b; padding: 24px 16px; border-right: 1px solid #334155;
+      z-index: 100; display: flex; flex-direction: column; gap: 8px;
+    }
+    .sidebar-brand { font-size: 1.3rem; font-weight: 700; color: #38bdf8; margin-bottom: 24px; }
+    .sidebar a {
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      border-radius: 8px; color: #94a3b8; text-decoration: none; font-size: 0.9rem;
+      transition: all 0.15s;
+    }
+    .sidebar a:hover, .sidebar a.active { background: #0f172a; color: #38bdf8; }
+
+    /* Main */
+    .main { margin-left: 220px; padding: 40px; }
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: #64748b; margin-bottom: 28px; font-size: 0.9rem; }
+
+    /* KPIs */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: #1e293b; border-radius: 12px; padding: 20px;
+      border: 1px solid #334155;
+    }
+    .kpi-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .kpi-value { font-size: 1.8rem; font-weight: 700; color: #38bdf8; }
+    .kpi-sub { font-size: 0.75rem; color: #64748b; margin-top: 4px; }
+
+    /* Barra de busca e filtros */
+    .filter-bar {
+      display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1; min-width: 260px; background: #1e293b; border: 1px solid #334155;
+      border-radius: 8px; padding: 10px 16px; color: #e2e8f0; font-size: 0.9rem;
+    }
+    .search-input:focus { outline: none; border-color: #38bdf8; }
+    .filter-select {
+      background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+      padding: 10px 14px; color: #e2e8f0; font-size: 0.9rem;
+    }
+
+    /* Grid de Turmas e Locais */
+    .turmas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 20px;
+    }
+    .turma-card {
+      background: #1e293b; border-radius: 14px; padding: 24px;
+      border: 1px solid #334155; display: flex; flex-direction: column;
+      justify-content: space-between; transition: transform 0.15s, border-color 0.15s;
+    }
+    .turma-card:hover {
+      transform: translateY(-2px);
+      border-color: #475569;
+    }
+    .turma-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .turma-codigo {
+      display: inline-block; background: #1d4ed830; border: 1px solid #3b82f680;
+      color: #93c5fd; border-radius: 6px; padding: 2px 8px;
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    }
+    .turma-periodo { font-size: 0.78rem; color: #64748b; }
+    .turma-titulo { font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+    .turma-prof { font-size: 0.82rem; color: #94a3b8; margin-bottom: 16px; }
+
+    /* Bloco do Local (IE04) */
+    .local-box {
+      background: #0f172a; border-radius: 10px; padding: 14px;
+      border: 1px solid #263346; margin-bottom: 16px;
+    }
+    .local-box-title {
+      font-size: 0.72rem; color: #38bdf8; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .local-detail {
+      font-size: 0.88rem; color: #e2e8f0; font-weight: 600; margin-bottom: 4px;
+    }
+    .local-sub {
+      font-size: 0.78rem; color: #64748b; display: flex; flex-direction: column; gap: 2px;
+    }
+
+    /* Horário e Dia */
+    .schedule-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #33415550; color: #cbd5e1; border-radius: 6px;
+      padding: 4px 10px; font-size: 0.78rem; margin-bottom: 16px;
+    }
+
+    /* Ações */
+    .turma-actions {
+      display: flex; gap: 10px; margin-top: auto;
+    }
+    .btn-wpp {
+      flex: 1; display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; background: #25D366; color: #0a3319; font-weight: 700;
+      padding: 10px 14px; border-radius: 8px; text-decoration: none;
+      font-size: 0.85rem; transition: opacity 0.15s;
+    }
+    .btn-wpp:hover { opacity: 0.9; }
+    .btn-wpp.disabled {
+      background: #334155; color: #64748b; pointer-events: none;
+    }
+    .btn-test-notif {
+      padding: 10px 12px; background: transparent; border: 1px solid #475569;
+      color: #94a3b8; border-radius: 8px; font-size: 0.85rem; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-test-notif:hover { border-color: #38bdf8; color: #38bdf8; }
+
+    /* Modal de Notificação WhatsApp */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: #000a;
+      z-index: 200; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #1e293b; border-radius: 16px; padding: 28px;
+      width: 520px; max-width: 95vw; border: 1px solid #334155;
+    }
+    .modal h3 { font-size: 1.15rem; margin-bottom: 12px; color: #4ade80; }
+    .modal p { font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px; line-height: 1.5; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .form-group label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; }
+    .form-group input, .form-group textarea {
+      background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+      padding: 10px 12px; color: #e2e8f0; font-size: 0.88rem;
+    }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #38bdf8; }
+    .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .btn-cancel {
+      background: transparent; border: 1px solid #475569; color: #94a3b8;
+      padding: 8px 16px; border-radius: 6px; cursor: pointer;
+    }
+    .btn-send {
+      background: #25D366; color: #0a3319; font-weight: 700; border: none;
+      padding: 8px 18px; border-radius: 6px; cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 16px; }
+      .turmas-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-brand">📊 SIMPA</div>
+  <a href="/">🏠 Dashboard</a>
+  <a href="/analytics/">📈 Analítico</a>
+  <a href="/comunidade/perfil/">👤 Meu Perfil</a>
+  <a href="/comunidade/duvidas/">💬 Comunidade</a>
+  <a href="/comunidade/locais/" class="active">📍 Locais de Aula</a>
+  <a href="/admin/">⚙️ Admin</a>
+</nav>
+
+<main class="main">
+  <h1>📍 Locais de Aula &amp; Grupos WhatsApp</h1>
+  <p class="subtitle">IE04 — Gestão e visualização de salas, prédios e horários &nbsp;·&nbsp; IE03 — Canais oficiais de comunicação</p>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Turmas Ativas</div>
+      <div class="kpi-value" id="totalTurmas">0</div>
+      <div class="kpi-sub">cadastradas no semestre</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Salas com Alocação</div>
+      <div class="kpi-value" style="color:#4ade80" id="totalAlocadas">0</div>
+      <div class="kpi-sub">prontas para aula presencial</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Grupos WhatsApp</div>
+      <div class="kpi-value" style="color:#25D366" id="totalGrupos">0</div>
+      <div class="kpi-sub">links de turmas vinculados</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Campus Principal</div>
+      <div class="kpi-value" style="font-size:1.2rem; color:#f1f5f9; padding-top:6px;">UniEVANGÉLICA</div>
+      <div class="kpi-sub">Campus Anápolis / GO</div>
+    </div>
+  </div>
+
+  <!-- Barra de Filtros -->
+  <div class="filter-bar">
+    <input type="text" id="filtroTexto" class="search-input" placeholder="🔍 Buscar por disciplina, código, professor ou sala..." />
+    <select id="filtroDia" class="filter-select">
+      <option value="">Todos os dias</option>
+      <option value="Segunda">Segunda-feira</option>
+      <option value="Terça">Terça-feira</option>
+      <option value="Quarta">Quarta-feira</option>
+      <option value="Quinta">Quinta-feira</option>
+      <option value="Sexta">Sexta-feira</option>
+      <option value="Sábado">Sábado</option>
+    </select>
+  </div>
+
+  <!-- Grid de Turmas -->
+  <div class="turmas-grid" id="turmasContainer">
+    <p style="color:#64748b; padding:20px;">Carregando turmas e locais de aula...</p>
+  </div>
+</main>
+
+<!-- Modal Notificação WhatsApp (IE03) -->
+<div class="modal-overlay" id="modalWpp">
+  <div class="modal">
+    <h3>📲 Disparar Notificação WhatsApp (Meta Cloud API)</h3>
+    <p>
+      Envie alertas acadêmicos, avisos de risco ou recados da turma. A integração utiliza a
+      <strong>Meta WhatsApp Business Cloud API v19.0</strong> com rastreabilidade completa.
+    </p>
+    <form id="formWpp">
+      <input type="hidden" id="notifTurmaId" />
+      <div class="form-group">
+        <label>Nome do Destinatário</label>
+        <input type="text" id="notifNome" placeholder="Ex: Ana Clara Souza" required />
+      </div>
+      <div class="form-group">
+        <label>Número WhatsApp (com DDD)</label>
+        <input type="text" id="notifTelefone" placeholder="Ex: (62) 99999-9999" required />
+      </div>
+      <div class="form-group">
+        <label>Ponto de Atenção / Risco</label>
+        <input type="text" id="notifMotivo" placeholder="Ex: Frequência abaixo de 75% em Banco de Dados" />
+      </div>
+      <div class="form-group">
+        <label>Recomendação Pedagógica</label>
+        <textarea id="notifRecomendacao" rows="2" placeholder="Ex: Procure o plantão de monitoria para agendar tutoria individual."></textarea>
+      </div>
+      <div class="modal-buttons">
+        <button type="button" class="btn-cancel" onclick="fecharModalWpp()">Cancelar</button>
+        <button type="submit" class="btn-send">🚀 Enviar Mensagem</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+let listaTurmas = [];
+
+async function carregarTurmas() {
+  const container = document.getElementById('turmasContainer');
+  try {
+    const resp = await fetch('/api/turmas/', { headers: { Accept: 'application/json' } });
+    if (!resp.ok) throw new Error('Falha ao obter turmas');
+    const data = await resp.json();
+    listaTurmas = data.results || data;
+
+    renderizarTurmas(listaTurmas);
+    atualizarKPIs(listaTurmas);
+  } catch(e) {
+    container.innerHTML = `
+      <div style="background:#1e293b; border-radius:12px; padding:24px; border:1px solid #334155; grid-column:1/-1;">
+        <p style="color:#f87171; font-weight:600;">⚠️ Modo demonstração ou API indisponível.</p>
+        <p style="color:#94a3b8; font-size:0.85rem; margin-top:6px;">Exibindo turmas cadastradas com os locais mapeados do campus.</p>
+      </div>
+    `;
+    usarDadosDemonstracao();
+  }
+}
+
+function usarDadosDemonstracao() {
+  listaTurmas = [
+    {
+      id: 1,
+      codigo: 'ES201',
+      nome: 'Engenharia de Software',
+      professor: 'Prof. Ricardo Alves',
+      periodo: '2º Período',
+      curso: 'Inteligência Artificial',
+      dia_semana: 'Segunda-feira',
+      horario: '19:00 - 22:30',
+      link_grupo_whatsapp: 'https://chat.whatsapp.com/exemplo-es201',
+      local_aula_detalhes: {
+        campus: 'UniEVANGÉLICA - Campus Anápolis',
+        bloco: 'Bloco A',
+        sala: 'Sala 204',
+        andar: '2º Andar',
+        tipo_espaco: 'Sala de Aula',
+        capacidade: 45
+      }
+    },
+    {
+      id: 2,
+      codigo: 'BD201',
+      nome: 'Banco de Dados',
+      professor: 'Profª. Márcia Tavares',
+      periodo: '2º Período',
+      curso: 'Inteligência Artificial',
+      dia_semana: 'Terça-feira',
+      horario: '19:00 - 22:30',
+      link_grupo_whatsapp: 'https://chat.whatsapp.com/exemplo-bd201',
+      local_aula_detalhes: {
+        campus: 'UniEVANGÉLICA - Campus Anápolis',
+        bloco: 'Bloco de Exatas',
+        sala: 'Lab de Informática 03',
+        andar: '1º Andar',
+        tipo_espaco: 'Laboratório de Computação',
+        capacidade: 40
+      }
+    },
+    {
+      id: 3,
+      codigo: 'IA201',
+      nome: 'Inteligência Artificial',
+      professor: 'Prof. Carlos Mendes',
+      periodo: '2º Período',
+      curso: 'Inteligência Artificial',
+      dia_semana: 'Quarta-feira',
+      horario: '19:00 - 22:30',
+      link_grupo_whatsapp: 'https://chat.whatsapp.com/exemplo-ia201',
+      local_aula_detalhes: {
+        campus: 'UniEVANGÉLICA - Campus Anápolis',
+        bloco: 'Bloco C (Inovação)',
+        sala: 'Lab de IA & Robótica',
+        andar: 'Térreo',
+        tipo_espaco: 'Laboratório Especializado',
+        capacidade: 35
+      }
+    },
+    {
+      id: 4,
+      codigo: 'MD201',
+      nome: 'Matemática Discreta',
+      professor: 'Profª. Juliana Rocha',
+      periodo: '2º Período',
+      curso: 'Inteligência Artificial',
+      dia_semana: 'Quinta-feira',
+      horario: '19:00 - 22:30',
+      link_grupo_whatsapp: '',
+      local_aula_detalhes: {
+        campus: 'UniEVANGÉLICA - Campus Anápolis',
+        bloco: 'Bloco A',
+        sala: 'Sala 208',
+        andar: '2º Andar',
+        tipo_espaco: 'Sala de Aula',
+        capacidade: 50
+      }
+    },
+    {
+      id: 5,
+      codigo: 'PI201',
+      nome: 'Projeto Integrador',
+      professor: 'Prof. Eduardo Santos',
+      periodo: '2º Período',
+      curso: 'Inteligência Artificial',
+      dia_semana: 'Sexta-feira',
+      horario: '19:00 - 22:30',
+      link_grupo_whatsapp: 'https://chat.whatsapp.com/exemplo-pi201',
+      local_aula_detalhes: {
+        campus: 'UniEVANGÉLICA - Campus Anápolis',
+        bloco: 'Bloco C (Inovação)',
+        sala: 'Espaço Maker / Hub',
+        andar: '1º Andar',
+        tipo_espaco: 'Espaço Colaborativo',
+        capacidade: 60
+      }
+    }
+  ];
+  renderizarTurmas(listaTurmas);
+  atualizarKPIs(listaTurmas);
+}
+
+function renderizarTurmas(turmas) {
+  const container = document.getElementById('turmasContainer');
+  if (!turmas.length) {
+    container.innerHTML = '<p style="color:#64748b; padding:20px;">Nenhuma turma encontrada com os filtros selecionados.</p>';
+    return;
+  }
+
+  container.innerHTML = turmas.map(t => {
+    const loc = t.local_aula_detalhes;
+    const temLocal = !!loc;
+    const temWpp = !!t.link_grupo_whatsapp;
+
+    return `
+      <div class="turma-card">
+        <div>
+          <div class="turma-header">
+            <span class="turma-codigo">${t.codigo || 'TURMA'}</span>
+            <span class="turma-periodo">${t.periodo || ''}</span>
+          </div>
+          <h3 class="turma-titulo">${t.nome}</h3>
+          <div class="turma-prof">👨‍🏫 ${t.professor || 'Professor a definir'} &nbsp;·&nbsp; ${t.curso || ''}</div>
+
+          <div class="schedule-badge">
+            🗓️ ${t.dia_semana || 'Dia a definir'} &nbsp;·&nbsp; ⏰ ${t.horario || 'Horário regular'}
+          </div>
+
+          <!-- IE04: Localização Física -->
+          <div class="local-box">
+            <div class="local-box-title">
+              📍 Localização Física da Aula (IE04)
+            </div>
+            ${temLocal ? `
+              <div class="local-detail">🏢 ${loc.bloco} — ${loc.sala}</div>
+              <div class="local-sub">
+                <span>🏛️ ${loc.campus || 'Campus Anápolis'} ${loc.andar ? '(' + loc.andar + ')' : ''}</span>
+                <span>🏷️ ${loc.tipo_espaco || 'Sala'} · Capacidade: ${loc.capacidade || '—'} alunos</span>
+              </div>
+            ` : `
+              <div style="color:#fbbf24; font-size:0.82rem;">
+                ⏳ Aguardando alocação de sala presencial pela coordenação.
+              </div>
+            `}
+          </div>
+        </div>
+
+        <!-- IE03: Ações e WhatsApp -->
+        <div class="turma-actions">
+          <a
+            href="${temWpp ? t.link_grupo_whatsapp : '#'}"
+            target="_blank"
+            class="btn-wpp ${temWpp ? '' : 'disabled'}"
+            title="${temWpp ? 'Abrir grupo oficial no WhatsApp' : 'Grupo ainda não vinculado'}"
+          >
+            💬 ${temWpp ? 'Grupo WhatsApp' : 'Sem Grupo'}
+          </a>
+          <button
+            class="btn-test-notif"
+            onclick="abrirModalWpp(${t.id}, '${t.nome.replace(/'/g, "\\'")}')"
+            title="Disparar notificação de risco via Meta Cloud API"
+          >
+            📲 Alerta
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function atualizarKPIs(turmas) {
+  document.getElementById('totalTurmas').textContent = turmas.length;
+  document.getElementById('totalAlocadas').textContent = turmas.filter(t => t.local_aula_detalhes).length;
+  document.getElementById('totalGrupos').textContent = turmas.filter(t => t.link_grupo_whatsapp).length;
+}
+
+// Filtros em tempo real
+function aplicarFiltros() {
+  const busca = document.getElementById('filtroTexto').value.toLowerCase();
+  const dia = document.getElementById('filtroDia').value;
+
+  const filtrados = listaTurmas.filter(t => {
+    const texto = `${t.nome} ${t.codigo} ${t.professor} ${t.local_aula_detalhes?.sala || ''} ${t.local_aula_detalhes?.bloco || ''}`.toLowerCase();
+    const matchTexto = !busca || texto.includes(busca);
+    const matchDia = !dia || (t.dia_semana && t.dia_semana.includes(dia));
+    return matchTexto && matchDia;
+  });
+
+  renderizarTurmas(filtrados);
+}
+
+document.getElementById('filtroTexto').addEventListener('input', aplicarFiltros);
+document.getElementById('filtroDia').addEventListener('change', aplicarFiltros);
+
+// Modal de WhatsApp
+function abrirModalWpp(turmaId, turmaNome) {
+  document.getElementById('notifTurmaId').value = turmaId;
+  document.getElementById('notifMotivo').value = `Acompanhamento na disciplina de ${turmaNome}`;
+  document.getElementById('modalWpp').classList.add('open');
+}
+
+function fecharModalWpp() {
+  document.getElementById('modalWpp').classList.remove('open');
+}
+
+document.getElementById('formWpp').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {
+    turma_id: document.getElementById('notifTurmaId').value,
+    destinatario_nome: document.getElementById('notifNome').value,
+    destinatario_telefone: document.getElementById('notifTelefone').value,
+    motivo_risco: document.getElementById('notifMotivo').value,
+    recomendacao: document.getElementById('notifRecomendacao').value,
+  };
+
+  try {
+    const resp = await fetch('/api/comunidade/whatsapp/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify(payload),
+    });
+    const result = await resp.json();
+    if (resp.ok) {
+      alert(`✅ Notificação registrada com sucesso!\nStatus: ${result.status}\nDestinatário: ${result.destinatario}`);
+      fecharModalWpp();
+    } else {
+      alert(`Erro: ${result.error || result.mensagem || 'Falha ao registrar notificação'}`);
+    }
+  } catch(e) {
+    alert('Erro de conexão ao acionar a API de WhatsApp.');
+  }
+});
+
+function getCookie(name) {
+  return document.cookie.split('; ').find(r => r.startsWith(name + '='))?.split('=')[1] || '';
+}
+
+carregarTurmas();
+</script>
+</body>
+</html>

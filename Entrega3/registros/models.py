@@ -18,6 +18,8 @@ class RegistroAcademico(models.Model):
     nota = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        null=True,
+        blank=True,
         validators=[
             MinValueValidator(0),
             MaxValueValidator(10),
@@ -26,11 +28,14 @@ class RegistroAcademico(models.Model):
     frequencia = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        null=True,
+        blank=True,
         validators=[
             MinValueValidator(0),
             MaxValueValidator(100),
         ],
     )
+    situacao_original = models.CharField(max_length=50, blank=True, default="EM_CURSO")
     observacoes = models.TextField(blank=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 

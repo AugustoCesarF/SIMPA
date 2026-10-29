@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "turmas",
     "registros",
     "analytics",
+    "comunidade",
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
