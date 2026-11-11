@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SIMPA — Comunidade</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: 220px; height: 100vh;
+      background: #1e293b; padding: 24px 16px; border-right: 1px solid #334155;
+      z-index: 100; display: flex; flex-direction: column; gap: 8px;
+    }
+    .sidebar-brand { font-size: 1.3rem; font-weight: 700; color: #38bdf8; margin-bottom: 24px; }
+    .sidebar a { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-size: 0.9rem; }
+    .sidebar a:hover, .sidebar a.active { background: #0f172a; color: #38bdf8; }
+    .main { margin-left: 220px; padding: 40px; }
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: #64748b; margin-bottom: 32px; font-size: 0.9rem; }
+
+    /* Layout 2 colunas */
+    .layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+
+    /* Feed de dúvidas */
+    .feed { display: flex; flex-direction: column; gap: 16px; }
+    .topico-card {
+      background: #1e293b; border-radius: 12px; padding: 20px;
+      border: 1px solid #334155; transition: border-color 0.2s;
+    }
+    .topico-card:hover { border-color: #475569; }
+    .topico-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .topico-titulo { font-size: 1rem; font-weight: 600; color: #e2e8f0; }
+    .topico-meta { font-size: 0.75rem; color: #64748b; margin-top: 4px; }
+    .topico-conteudo { font-size: 0.85rem; color: #94a3b8; line-height: 1.6; margin-bottom: 14px; }
+    .topico-footer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 99px; font-size: 0.72rem; font-weight: 600;
+    }
+    .badge-disciplina { background: #1d4ed830; color: #93c5fd; border: 1px solid #3b82f680; }
+    .badge-resolvido  { background: #14532d40; color: #4ade80; border: 1px solid #16a34a60; }
+    .badge-aberto     { background: #71180040; color: #fca5a5; border: 1px solid #ef444460; }
+    .badge-respostas  { background: #334155; color: #94a3b8; }
+
+    .btn-ver {
+      margin-left: auto; padding: 6px 16px;
+      background: transparent; border: 1px solid #475569;
+      border-radius: 6px; color: #94a3b8; font-size: 0.8rem;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-ver:hover { border-color: #38bdf8; color: #38bdf8; }
+
+    /* Painel lateral — Nova dúvida */
+    .side-card { background: #1e293b; border-radius: 12px; padding: 24px; border: 1px solid #334155; position: sticky; top: 24px; }
+    .side-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 20px; color: #e2e8f0; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group textarea, .form-group select {
+      background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+      padding: 10px 14px; color: #e2e8f0; font-size: 0.9rem;
+    }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #38bdf8; }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .btn-postar {
+      width: 100%; padding: 12px;
+      background: #38bdf8; color: #0f172a;
+      border: none; border-radius: 8px; font-weight: 700;
+      font-size: 0.95rem; cursor: pointer;
+    }
+    .btn-postar:hover { opacity: 0.9; }
+
+    /* Busca */
+    .busca-bar {
+      display: flex; gap: 10px; margin-bottom: 20px;
+    }
+    .busca-bar input {
+      flex: 1; background: #1e293b; border: 1px solid #334155;
+      border-radius: 8px; padding: 10px 16px;
+      color: #e2e8f0; font-size: 0.9rem;
+    }
+    .busca-bar input:focus { outline: none; border-color: #38bdf8; }
+
+    /* Modal resposta */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: #000a; z-index: 200; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #1e293b; border-radius: 16px; padding: 32px;
+      width: 600px; max-width: 95vw; border: 1px solid #334155;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal h3 { font-size: 1.1rem; margin-bottom: 20px; }
+    .modal .btn-fechar {
+      float: right; background: none; border: none;
+      color: #64748b; font-size: 1.3rem; cursor: pointer;
+    }
+    .resposta-item {
+      background: #0f172a; border-radius: 8px; padding: 14px;
+      margin-bottom: 10px; border-left: 3px solid #334155;
+    }
+    .resposta-item.solucao { border-left-color: #4ade80; }
+    .resposta-autor { font-size: 0.78rem; color: #64748b; margin-bottom: 6px; }
+    .resposta-texto { font-size: 0.87rem; line-height: 1.5; }
+    .textarea-resposta {
+      width: 100%; background: #0f172a; border: 1px solid #334155;
+      border-radius: 8px; padding: 12px; color: #e2e8f0;
+      font-size: 0.9rem; resize: vertical; min-height: 80px; margin-top: 16px;
+    }
+    .btn-enviar-resp {
+      margin-top: 10px; padding: 10px 24px;
+      background: #6366f1; color: #fff;
+      border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+    }
+
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-brand">📊 SIMPA</div>
+  <a href="/">🏠 Dashboard</a>
+  <a href="/analytics/">📈 Analítico</a>
+  <a href="/comunidade/perfil/">👤 Meu Perfil</a>
+  <a href="/comunidade/duvidas/" class="active">💬 Comunidade</a>
+  <a href="/comunidade/locais/">📍 Locais de Aula</a>
+  <a href="/admin/">⚙️ Admin</a>
+</nav>
+
+<main class="main">
+  <h1>💬 Comunidade</h1>
+  <p class="subtitle">IE02 — Dúvidas aluno-professor · Tire suas dúvidas e ajude seus colegas</p>
+
+  <div class="busca-bar">
+    <input type="text" id="buscaInput" placeholder="🔍 Buscar dúvidas por título, disciplina ou autor..." />
+  </div>
+
+  <div class="layout">
+    <!-- Feed -->
+    <div>
+      <div class="feed" id="feedDuvidas">
+        <p style="color:#475569; text-align:center; padding:40px">Carregando dúvidas...</p>
+      </div>
+    </div>
+
+    <!-- Nova dúvida (painel lateral) -->
+    <div>
+      <div class="side-card">
+        <h3>✏️ Publicar Nova Dúvida</h3>
+        <form id="formNovaDuvida">
+          <div class="form-group">
+            <label>Título</label>
+            <input type="text" id="novaTitulo" placeholder="Ex: Como funciona a normalização em BD?" required />
+          </div>
+          <div class="form-group">
+            <label>Disciplina</label>
+            <input type="text" id="novaDisciplina" placeholder="Ex: Banco de Dados" />
+          </div>
+          <div class="form-group">
+            <label>Sua dúvida</label>
+            <textarea id="novaConteudo" placeholder="Descreva sua dúvida com detalhes..." required></textarea>
+          </div>
+          <button type="submit" class="btn-postar">📤 Publicar Dúvida</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal de respostas -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="btn-fechar" onclick="fecharModal()">✕</button>
+    <h3 id="modalTitulo">Dúvida</h3>
+    <p id="modalConteudo" style="color:#94a3b8; font-size:0.9rem; margin-bottom:20px; line-height:1.6"></p>
+    <hr style="border-color:#334155; margin-bottom:20px"/>
+    <div id="listaRespostas"></div>
+    <textarea class="textarea-resposta" id="novaResposta" placeholder="Sua resposta..."></textarea>
+    <button class="btn-enviar-resp" onclick="enviarResposta()">💬 Responder</button>
+  </div>
+</div>
+
+<script>
+let topicoAtual = null;
+
+async function carregarDuvidas(busca = '') {
+  const feed = document.getElementById('feedDuvidas');
+  try {
+    let url = '/api/comunidade/topicos/';
+    if (busca) url += `?search=${encodeURIComponent(busca)}`;
+    const resp = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!resp.ok) throw new Error('Erro');
+    const data = await resp.json();
+    const resultados = data.results || data;
+
+    if (!resultados.length) {
+      feed.innerHTML = '<p style="color:#475569;text-align:center;padding:40px">Nenhuma dúvida encontrada.</p>';
+      return;
+    }
+
+    feed.innerHTML = resultados.map(t => `
+      <div class="topico-card">
+        <div class="topico-header">
+          <div>
+            <div class="topico-titulo">${t.titulo}</div>
+            <div class="topico-meta">por ${t.autor_nome || 'Anônimo'} · ${formatarData(t.criado_em)}</div>
+          </div>
+          <span class="badge ${t.resolvido ? 'badge-resolvido' : 'badge-aberto'}">
+            ${t.resolvido ? '✅ Resolvido' : '🔴 Aberto'}
+          </span>
+        </div>
+        <div class="topico-conteudo">${t.conteudo?.substring(0, 180)}${t.conteudo?.length > 180 ? '...' : ''}</div>
+        <div class="topico-footer">
+          ${t.disciplina_nome ? `<span class="badge badge-disciplina">📚 ${t.disciplina_nome}</span>` : ''}
+          <span class="badge badge-respostas">💬 ${t.total_respostas || 0} respostas</span>
+          <button class="btn-ver" onclick="abrirModal(${t.id}, '${escapar(t.titulo)}', '${escapar(t.conteudo)}')">
+            Ver & Responder →
+          </button>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    feed.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px">Faça login para ver a comunidade.</p>';
+  }
+}
+
+async function abrirModal(id, titulo, conteudo) {
+  topicoAtual = id;
+  document.getElementById('modalTitulo').textContent = titulo;
+  document.getElementById('modalConteudo').textContent = conteudo;
+  document.getElementById('listaRespostas').innerHTML = 'Carregando respostas...';
+  document.getElementById('modalOverlay').classList.add('open');
+
+  try {
+    const resp = await fetch(`/api/comunidade/topicos/${id}/`, { headers: { Accept: 'application/json' } });
+    const data = await resp.json();
+    const respostas = data.respostas || [];
+    document.getElementById('listaRespostas').innerHTML = respostas.length
+      ? respostas.map(r => `
+          <div class="resposta-item ${r.eh_solucao ? 'solucao' : ''}">
+            <div class="resposta-autor">${r.eh_solucao ? '✅ Solução aceita · ' : ''}${r.autor_nome || 'Usuário'} · ${formatarData(r.criado_em)}</div>
+            <div class="resposta-texto">${r.conteudo}</div>
+          </div>`).join('')
+      : '<p style="color:#475569;font-size:0.85rem">Ainda sem respostas. Seja o primeiro!</p>';
+  } catch(e) {
+    document.getElementById('listaRespostas').innerHTML = '<p style="color:#f87171">Erro ao carregar respostas.</p>';
+  }
+}
+
+function fecharModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  topicoAtual = null;
+}
+
+async function enviarResposta() {
+  const conteudo = document.getElementById('novaResposta').value.trim();
+  if (!conteudo || !topicoAtual) return;
+  try {
+    const resp = await fetch(`/api/comunidade/topicos/${topicoAtual}/responder/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ conteudo }),
+    });
+    if (resp.ok) {
+      document.getElementById('novaResposta').value = '';
+      abrirModal(topicoAtual, document.getElementById('modalTitulo').textContent, document.getElementById('modalConteudo').textContent);
+      carregarDuvidas();
+    }
+  } catch(e) { alert('Erro ao enviar resposta.'); }
+}
+
+document.getElementById('formNovaDuvida').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {
+    titulo: document.getElementById('novaTitulo').value,
+    conteudo: document.getElementById('novaConteudo').value,
+    disciplina_nome: document.getElementById('novaDisciplina').value,
+  };
+  try {
+    const resp = await fetch('/api/comunidade/topicos/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify(payload),
+    });
+    if (resp.ok) {
+      document.getElementById('novaTitulo').value = '';
+      document.getElementById('novaConteudo').value = '';
+      document.getElementById('novaDisciplina').value = '';
+      carregarDuvidas();
+    }
+  } catch(e) { alert('Erro ao publicar.'); }
+});
+
+document.getElementById('buscaInput').addEventListener('input', (e) => {
+  clearTimeout(window._buscaTimer);
+  window._buscaTimer = setTimeout(() => carregarDuvidas(e.target.value), 400);
+});
+
+function formatarData(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+function escapar(s) { return (s || '').replace(/'/g, "\\'").replace(/\n/g, ' '); }
+function getCookie(name) { return document.cookie.split('; ').find(r => r.startsWith(name+'='))?.split('=')[1] || ''; }
+document.getElementById('modalOverlay').addEventListener('click', e => { if(e.target === e.currentTarget) fecharModal(); });
+
+carregarDuvidas();
+</script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SIMPA — Meu Perfil</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: 220px; height: 100vh;
+      background: #1e293b; padding: 24px 16px;
+      border-right: 1px solid #334155; z-index: 100;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .sidebar-brand { font-size: 1.3rem; font-weight: 700; color: #38bdf8; margin-bottom: 24px; }
+    .sidebar a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 8px;
+      color: #94a3b8; text-decoration: none; font-size: 0.9rem; transition: all 0.15s;
+    }
+    .sidebar a:hover, .sidebar a.active { background: #0f172a; color: #38bdf8; }
+
+    /* Main */
+    .main { margin-left: 220px; padding: 40px; }
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: #64748b; margin-bottom: 36px; font-size: 0.9rem; }
+
+    /* Card */
+    .card { background: #1e293b; border-radius: 16px; padding: 32px; border: 1px solid #334155; margin-bottom: 24px; }
+
+    /* Perfil topo */
+    .perfil-topo {
+      display: flex; align-items: center; gap: 28px; margin-bottom: 32px;
+    }
+    .avatar-wrap { position: relative; }
+    .avatar {
+      width: 96px; height: 96px; border-radius: 50%;
+      object-fit: cover; border: 3px solid #38bdf8;
+      background: #334155;
+    }
+    .avatar-badge {
+      position: absolute; bottom: 4px; right: 4px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #4ade80; border: 2px solid #1e293b;
+    }
+    .perfil-info h2 { font-size: 1.4rem; font-weight: 700; }
+    .perfil-info .curso-tag {
+      display: inline-block; margin-top: 6px;
+      background: #1d4ed840; border: 1px solid #3b82f6;
+      color: #93c5fd; border-radius: 99px; padding: 3px 12px; font-size: 0.8rem;
+    }
+    .perfil-info .ra { color: #64748b; font-size: 0.85rem; margin-top: 4px; }
+
+    /* Grid de campos */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group textarea {
+      background: #0f172a; border: 1px solid #334155;
+      border-radius: 8px; padding: 10px 14px;
+      color: #e2e8f0; font-size: 0.9rem;
+      transition: border-color 0.15s;
+    }
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none; border-color: #38bdf8;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-full { grid-column: 1 / -1; }
+
+    /* Toggle WhatsApp */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px; background: #0f172a; border-radius: 10px; border: 1px solid #334155;
+    }
+    .toggle-info h4 { font-size: 0.9rem; }
+    .toggle-info p { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+    .toggle {
+      position: relative; width: 44px; height: 24px;
+      display: inline-block;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; inset: 0; cursor: pointer;
+      background: #334155; border-radius: 24px; transition: 0.3s;
+    }
+    .slider::before {
+      content: ""; position: absolute;
+      width: 18px; height: 18px; left: 3px; bottom: 3px;
+      background: #fff; border-radius: 50%; transition: 0.3s;
+    }
+    input:checked + .slider { background: #25D366; }
+    input:checked + .slider::before { transform: translateX(20px); }
+
+    /* Botão salvar */
+    .btn-save {
+      margin-top: 24px; padding: 12px 32px;
+      background: #38bdf8; color: #0f172a;
+      border: none; border-radius: 8px; font-weight: 700;
+      font-size: 0.95rem; cursor: pointer; transition: opacity 0.15s;
+    }
+    .btn-save:hover { opacity: 0.9; }
+
+    /* IE03 — WhatsApp link */
+    .wpp-card {
+      background: #14532d30; border: 1px solid #16a34a;
+      border-radius: 12px; padding: 20px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .wpp-icon { font-size: 2.5rem; }
+    .wpp-info h4 { font-size: 1rem; color: #4ade80; }
+    .wpp-info p { font-size: 0.82rem; color: #94a3b8; margin-top: 4px; }
+    .wpp-info a { color: #4ade80; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .perfil-topo { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-brand">📊 SIMPA</div>
+  <a href="/">🏠 Dashboard</a>
+  <a href="/analytics/">📈 Analítico</a>
+  <a href="/comunidade/perfil/" class="active">👤 Meu Perfil</a>
+  <a href="/comunidade/duvidas/">💬 Comunidade</a>
+  <a href="/comunidade/locais/">📍 Locais de Aula</a>
+  <a href="/admin/">⚙️ Admin</a>
+</nav>
+
+<main class="main">
+  <h1>👤 Meu Perfil</h1>
+  <p class="subtitle">IE01 — Avatar, informações pessoais e preferências de notificação</p>
+
+  <!-- Topo do perfil -->
+  <div class="card">
+    <div class="perfil-topo">
+      <div class="avatar-wrap">
+        <img
+          id="avatarImg"
+          class="avatar"
+          src="https://ui-avatars.com/api/?name=Usu%C3%A1rio+SIMPA&background=4e8cff&color=fff&size=96"
+          alt="Avatar"
+        />
+        <div class="avatar-badge"></div>
+      </div>
+      <div class="perfil-info">
+        <h2 id="nomeExibido">Carregando...</h2>
+        <span class="curso-tag" id="cursoExibido">—</span>
+        <div class="ra" id="raExibido">RA: —</div>
+      </div>
+    </div>
+
+    <!-- Formulário -->
+    <form id="formPerfil">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>URL do Avatar</label>
+          <input type="url" id="avatar_url" placeholder="https://exemplo.com/foto.jpg" />
+        </div>
+        <div class="form-group">
+          <label>Telefone / WhatsApp</label>
+          <input type="tel" id="telefone" placeholder="(62) 9 9999-9999" />
+        </div>
+        <div class="form-group">
+          <label>Matrícula / RA</label>
+          <input type="text" id="matricula_ra" placeholder="20260001" />
+        </div>
+        <div class="form-group">
+          <label>Curso</label>
+          <input type="text" id="curso" value="Inteligência Artificial" />
+        </div>
+        <div class="form-group">
+          <label>Cidade</label>
+          <input type="text" id="cidade" value="Anápolis" />
+        </div>
+        <div class="form-group">
+          <label>UF</label>
+          <input type="text" id="uf" maxlength="2" value="GO" />
+        </div>
+        <div class="form-group form-full">
+          <label>Biografia</label>
+          <textarea id="biografia" placeholder="Uma breve descrição sobre você..."></textarea>
+        </div>
+      </div>
+
+      <!-- Toggle WhatsApp (IE03) -->
+      <div class="toggle-row" style="margin-top:20px">
+        <div class="toggle-info">
+          <h4>📱 Notificações via WhatsApp</h4>
+          <p>Receber alertas acadêmicos e lembretes de turma pelo WhatsApp</p>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="notificacoes_whatsapp" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn-save">💾 Salvar Perfil</button>
+    </form>
+  </div>
+
+  <!-- Link do Grupo WhatsApp (IE03) -->
+  <div class="wpp-card">
+    <div class="wpp-icon">📲</div>
+    <div class="wpp-info">
+      <h4>Grupos de WhatsApp das Turmas</h4>
+      <p>
+        Conforme a política oficial da Meta, o SIMPA disponibiliza o link de convite de cada turma
+        para acesso direto ao grupo. Acesse em
+        <a href="/comunidade/locais/">Locais de Aula</a> para ver o link da sua turma.
+      </p>
+    </div>
+  </div>
+</main>
+
+<script>
+// Carregar perfil da API
+async function carregarPerfil() {
+  try {
+    const resp = await fetch('/api/comunidade/perfil/', {
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!resp.ok) throw new Error('Não autenticado');
+    const data = await resp.json();
+
+    document.getElementById('avatarImg').src = data.avatar_exibicao || data.avatar_url;
+    document.getElementById('nomeExibido').textContent = data.nome_completo || 'Usuário SIMPA';
+    document.getElementById('cursoExibido').textContent = data.curso || 'Inteligência Artificial';
+    document.getElementById('raExibido').textContent = `RA: ${data.matricula_ra || '—'}`;
+
+    document.getElementById('avatar_url').value = data.avatar_url || '';
+    document.getElementById('telefone').value = data.telefone || '';
+    document.getElementById('matricula_ra').value = data.matricula_ra || '';
+    document.getElementById('curso').value = data.curso || '';
+    document.getElementById('cidade').value = data.cidade || '';
+    document.getElementById('uf').value = data.uf || '';
+    document.getElementById('biografia').value = data.biografia || '';
+    document.getElementById('notificacoes_whatsapp').checked = data.notificacoes_whatsapp;
+  } catch(e) {
+    document.getElementById('nomeExibido').textContent = 'Faça login para ver o perfil';
+  }
+}
+
+// Salvar perfil na API
+document.getElementById('formPerfil').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {
+    avatar_url: document.getElementById('avatar_url').value,
+    telefone: document.getElementById('telefone').value,
+    matricula_ra: document.getElementById('matricula_ra').value,
+    curso: document.getElementById('curso').value,
+    cidade: document.getElementById('cidade').value,
+    uf: document.getElementById('uf').value,
+    biografia: document.getElementById('biografia').value,
+    notificacoes_whatsapp: document.getElementById('notificacoes_whatsapp').checked,
+  };
+  try {
+    const resp = await fetch('/api/comunidade/perfil/', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify(payload),
+    });
+    if (resp.ok) {
+      alert('✅ Perfil salvo com sucesso!');
+      carregarPerfil();
+    } else {
+      alert('❌ Erro ao salvar. Verifique os campos.');
+    }
+  } catch(e) {
+    alert('Erro de conexão com o servidor.');
+  }
+});
+
+function getCookie(name) {
+  return document.cookie.split('; ').find(r => r.startsWith(name + '='))?.split('=')[1] || '';
+}
+
+carregarPerfil();
+</script>
+</body>
+</html>

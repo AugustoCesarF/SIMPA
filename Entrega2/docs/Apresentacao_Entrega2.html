@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIMPA — Apresentação Oficial Entrega 2</title>
+  <style>
+    :root {
+      --bg-dark: #070a13;
+      --bg-card: rgba(16, 24, 44, 0.75);
+      --bg-card-border: rgba(255, 255, 255, 0.08);
+      --primary: #00d2ff;
+      --primary-glow: rgba(0, 210, 255, 0.35);
+      --secondary: #9d4edd;
+      --accent: #3a86ff;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(0, 210, 255, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(157, 78, 221, 0.08) 0%, transparent 40%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Top Bar */
+    header {
+      height: 60px;
+      background: rgba(10, 15, 29, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--bg-card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00b4d8, #0077b6);
+      border: none;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .timer-display {
+      font-family: monospace;
+      font-size: 0.95rem;
+      color: var(--primary);
+      background: rgba(0, 210, 255, 0.1);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 210, 255, 0.2);
+    }
+
+    /* Progress Line */
+    .progress-bar-container {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      width: 9%;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Slide Arena */
+    .slide-viewport {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+
+    .slide {
+      position: absolute;
+      width: 92%;
+      max-width: 1250px;
+      height: 85vh;
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      padding: 48px;
+      display: none;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      overflow-y: auto;
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Slide Content Typography */
+    .slide-tag {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slide-tag::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--primary);
+    }
+
+    .slide-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Layout Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 22px;
+      transition: all 0.25s;
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(0, 210, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .highlight-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+
+    .pill-cyan { background: rgba(0, 210, 255, 0.15); color: var(--primary); }
+    .pill-purple { background: rgba(157, 78, 221, 0.15); color: #c77dff; }
+    .pill-green { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .pill-amber { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .pill-red { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+    /* Comparison Table */
+    table.comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    table.comp-table th, table.comp-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    table.comp-table th {
+      color: var(--primary);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    table.comp-table td {
+      font-size: 0.92rem;
+      color: #cbd5e1;
+    }
+
+    table.comp-table tr:hover td {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    /* Code & Metrics */
+    .metric-box {
+      background: rgba(0, 210, 255, 0.04);
+      border: 1px solid rgba(0, 210, 255, 0.15);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .metric-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Speaker Notes Drawer */
+    .notes-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(11, 16, 30, 0.97);
+      border-top: 2px solid var(--primary);
+      padding: 20px 30px;
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 200;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8);
+    }
+
+    .notes-panel.open {
+      transform: translateY(0);
+    }
+
+    .notes-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .notes-content {
+      font-size: 1.05rem;
+      color: #e2e8f0;
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    /* Bottom Controller */
+    footer {
+      height: 60px;
+      background: rgba(10, 15, 29, 0.85);
+      border-top: 1px solid var(--bg-card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      z-index: 100;
+    }
+
+    .slide-counter {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .slide-counter span {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .arrow-btns {
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header>
+    <div class="brand">
+      <span class="brand-badge">SIMPA</span>
+      <span>Sistema Inteligente de Monitoramento e Predição Acadêmica</span>
+    </div>
+    <div class="nav-controls">
+      <div class="timer-display" id="timer">⏱️ 00:00</div>
+      <button class="btn" onclick="toggleTimer()">Iniciar Cronômetro</button>
+      <button class="btn" onclick="toggleNotes()">🎙️ Notas do Orador (N)</button>
+      <button class="btn btn-primary" onclick="toggleFullscreen()">⛶ Tela Cheia</button>
+    </div>
+  </header>
+
+  <!-- Progress Bar -->
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- Slide Viewport -->
+  <div class="slide-viewport">
+
+    <!-- SLIDE 1 -->
+    <div class="slide active" data-slide="1" data-speaker="Augusto">
+      <div class="slide-tag">Apresentação Oficial • Entrega 2</div>
+      <h1 class="slide-title">SIMPA — Monitoramento e Predição Acadêmica</h1>
+      <div class="slide-body">
+        <div class="grid-2" style="align-items: center;">
+          <div>
+            <h2 style="font-size: 1.6rem; color: #fff; margin-bottom: 16px;">Arquitetura de Produção, Backend Django MVT e Inteligência de Risco</h2>
+            <p style="font-size: 1.1rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px;">
+              Evolução da prova de conceito para uma plataforma relacional escalável, integrando acompanhamento de rendimento, detecção precoce de evasão e vida acadêmica universitária.
+            </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <span class="highlight-pill pill-cyan">Django 5.2</span>
+              <span class="highlight-pill pill-purple">Django REST Framework</span>
+              <span class="highlight-pill pill-green">PostgreSQL</span>
+              <span class="highlight-pill pill-amber">MVT + Services</span>
+              <span class="highlight-pill pill-red">Chart.js HUD</span>
+            </div>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--primary);">
+            <div class="card-title">👥 Equipe do Projeto</div>
+            <p class="card-desc" style="font-size: 1rem; line-height: 1.8;">
+              • <strong>Augusto César F.</strong> (Líder Técnico & Arquitetura)<br>
+              • <strong>Marcel</strong> (Engenharia de Dados & Backend)<br>
+              • <strong>Nicolas</strong> (Design UI/UX & Frontend HUD)<br>
+              • <strong>Eduardo</strong> (Qualidade de Software & Testes)<br>
+              • <strong>Gabriel</strong> (Regras de Negócio & Documentação)
+            </p>
+            <div style="margin-top: 16px; font-size: 0.85rem; color: var(--text-muted);">
+              📍 UniEVANGÉLICA — Centro Universitário de Anápolis
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide" data-slide="2" data-speaker="Augusto">
+      <div class="slide-tag">Contexto & Motivação</div>
+      <h1 class="slide-title">O Problema Real & A Proposta de Valor</h1>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card" style="border-top: 3px solid var(--danger);">
+            <div class="card-title" style="color: var(--danger);">⚠️ Cenário Tradicional (Dores)</div>
+            <p class="card-desc" style="font-size: 1rem; line-height: 1.7;">
+              • <strong>Diagnóstico Tardio:</strong> A reprovação ou evasão só é percebida ao final do semestre letivo, quando não há mais tempo pedagógico de recuperação.<br><br>
+              • <strong>Dados Fragmentados:</strong> Notas ficam em planilhas ou sistemas legados, faltas em diários e o contato com o aluno é disperso.<br><br>
+              • <strong>Falta de Ações Preventivas:</strong> Ausência de cruzamento analítico entre assiduidade e notas parciais para intervenção antes da prova final.
+            </p>
+          </div>
+          <div class="card" style="border-top: 3px solid var(--success);">
+            <div class="card-title" style="color: var(--success);">💡 Solução SIMPA (Valor Entregue)</div>
+            <p class="card-desc" style="font-size: 1rem; line-height: 1.7;">
+              • <strong>Monitoramento em Tempo Real:</strong> Indicadores centralizados por turma e aluno em um painel executivo moderno.<br><br>
+              • <strong>Motor Heurístico de Predição de Risco:</strong> Algoritmo contínuo que calcula o score de 0 a 100 e aponta a causa do risco (falta, nota ou ambos).<br><br>
+              • <strong>Apoio Universitário Integrado:</strong> Mapeamento de blocos/salas e comunicação direta via canais oficiais de WhatsApp.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide" data-slide="3" data-speaker="Marcel">
+      <div class="slide-tag">Evolução do Projeto</div>
+      <h1 class="slide-title">Transição da Entrega 1 para a Entrega 2</h1>
+      <div class="slide-body">
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th>Dimensão</th>
+              <th>Entrega 1 (Protótipo / Prova de Conceito)</th>
+              <th>Entrega 2 (Arquitetura de Produção)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Framework Backend</strong></td>
+              <td>Flask (Estrutura simples e monolítica)</td>
+              <td><span class="highlight-pill pill-cyan">Django 5.2 + Django REST Framework</span></td>
+            </tr>
+            <tr>
+              <td><strong>Camada de Persistência</strong></td>
+              <td>Mock em memória (Listas voláteis Python)</td>
+              <td><span class="highlight-pill pill-green">PostgreSQL (Relacional com integridade 3FN)</span></td>
+            </tr>
+            <tr>
+              <td><strong>Padrão Arquitetural</strong></td>
+              <td>Scripts com responsabilidade mista</td>
+              <td><span class="highlight-pill pill-purple">MVT Modular + Camada de Serviços desacoplada</span></td>
+            </tr>
+            <tr>
+              <td><strong>Autenticação & Segurança</strong></td>
+              <td>Chaves e usuários fixos em código</td>
+              <td><span class="highlight-pill pill-amber">DRF Token Authentication + .env blindado</span></td>
+            </tr>
+            <tr>
+              <td><strong>Validação de Entradas</strong></td>
+              <td>Validação superficial manual</td>
+              <td><span class="highlight-pill pill-cyan">Validação oficial de CPF (Receita Federal) e RA</span></td>
+            </tr>
+            <tr>
+              <td><strong>Experiência Visual</strong></td>
+              <td>Interface HTML estática básica</td>
+              <td><span class="highlight-pill pill-red">HUD Dark Glassmorphism + Gráficos Chart.js</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide" data-slide="4" data-speaker="Augusto">
+      <div class="slide-tag">Engenharia de Software</div>
+      <h1 class="slide-title">Arquitetura de Produção: MVT + DRF + PostgreSQL</h1>
+      <div class="slide-body">
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">🎛️ Camada MVT & Views</div>
+            <p class="card-desc">
+              • Views Django renderizam telas HTML completas com velocidade nativa.<br><br>
+              • ViewSets RESTful do DRF expõem endpoints JSON seguros para integração externa e aplicativos mobile.
+            </p>
+            <span class="highlight-pill pill-cyan">config/urls.py</span>
+          </div>
+
+          <div class="card">
+            <div class="card-title">⚙️ Camada de Serviços</div>
+            <p class="card-desc">
+              • Desacoplamento de regra de negócio: views e models ficam limpos.<br><br>
+              • O módulo <code>analytics/services.py</code> contém funções matemáticas e heurísticas isoladas e 100% testáveis.
+            </p>
+            <span class="highlight-pill pill-purple">services.py</span>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🐘 PostgreSQL & ORM</div>
+            <p class="card-desc">
+              • Banco relacional robusto rodando em produção local (porta 5432).<br><br>
+              • Migrations automatizadas do Django garantindo rastreabilidade do schema e integridade referencial estrita.
+            </p>
+            <span class="highlight-pill pill-green">PostgreSQL 16</span>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px; background: rgba(0, 210, 255, 0.03);">
+          <div style="font-size: 0.95rem; color: #e2e8f0; display: flex; justify-content: space-around; text-align: center;">
+            <div><strong>estudantes/</strong><br><small style="color: var(--text-muted);">Cadastro, RA e CPF</small></div>
+            <div><strong>turmas/</strong><br><small style="color: var(--text-muted);">Disciplinas & Locais</small></div>
+            <div><strong>registros/</strong><br><small style="color: var(--text-muted);">Notas, Frequências & HUD</small></div>
+            <div><strong>analytics/</strong><br><small style="color: var(--text-muted);">Estatística & Risco</small></div>
+            <div><strong>comunidade/</strong><br><small style="color: var(--text-muted);">Perfil, Dúvidas & WhatsApp</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="slide" data-slide="5" data-speaker="Marcel">
+      <div class="slide-tag">Banco de Dados & Domínio</div>
+      <h1 class="slide-title">Modelagem Relacional & Integridade de Dados</h1>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">📦 Entidades de Domínio Modeladas</div>
+            <p class="card-desc" style="font-size: 0.95rem; line-height: 1.7;">
+              • <strong>Estudante:</strong> RA único, CPF com validação algorítmica, contato, curso e status ativo.<br>
+              • <strong>Turma:</strong> Código único, período letivo, docente, carga horária e relação N:N com alunos.<br>
+              • <strong>LocalAula:</strong> Campus, bloco físico, sala, capacidade máxima e recursos (IE04).<br>
+              • <strong>RegistroAcademico:</strong> FK para Aluno e Turma, notas N1/N2/N3, total de faltas e situação calculada.<br>
+              • <strong>TopicoDuvida & Perfil:</strong> Relacionamentos 1:1 e 1:N para suporte à comunidade.
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-title">🔒 Garantias de Integridade (ORM)</div>
+            <p class="card-desc" style="font-size: 0.95rem; line-height: 1.7;">
+              • <strong>Constraint <code>unique_together</code>:</strong> Impede notas duplicadas do mesmo aluno na mesma turma.<br>
+              • <strong>Cálculo Automático de Situação:</strong> O modelo infere automaticamente <em>Aprovado</em>, <em>Recuperação</em>, <em>Reprovado</em> ou <em>Reprovado por Falta</em>.<br>
+              • <strong>Normalização 3FN:</strong> Local de aula e turmas desacoplados para fácil remanejamento de salas no campus.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="slide" data-slide="6" data-speaker="Eduardo">
+      <div class="slide-tag">Segurança & Conformidade</div>
+      <h1 class="slide-title">Segurança, LGPD & Validação Algorítmica</h1>
+      <div class="slide-body">
+        <div class="grid-3">
+          <div class="card" style="border-top: 3px solid var(--primary);">
+            <div class="card-title">🛡️ Validação Estrita de CPF</div>
+            <p class="card-desc">
+              Implementação do algoritmo <strong>Módulo 11</strong> da Receita Federal. O sistema valida os dois dígitos verificadores e rejeita números sequenciais fictícios nos Serializers.
+            </p>
+            <span class="highlight-pill pill-cyan">RNF01 Concluído</span>
+          </div>
+
+          <div class="card" style="border-top: 3px solid var(--secondary);">
+            <div class="card-title">⚖️ Princípios da LGPD</div>
+            <p class="card-desc">
+              Dados sensíveis blindados: senhas armazenadas com hash PBKDF2/SHA-256. Relatórios analíticos agregam dados sem exposição indevida da intimidade discente.
+            </p>
+            <span class="highlight-pill pill-purple">Privacidade Nativa</span>
+          </div>
+
+          <div class="card" style="border-top: 3px solid var(--amber);">
+            <div class="card-title">🔑 Gestão de Segredos (.env)</div>
+            <p class="card-desc">
+              Nenhuma credencial de banco, token de API ou <code>SECRET_KEY</code> fica no código. Todas as chaves são carregadas via <code>python-dotenv</code> e ignoradas pelo Git.
+            </p>
+            <span class="highlight-pill pill-amber">Zero Hardcoded Keys</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7 -->
+    <div class="slide" data-slide="7" data-speaker="Augusto">
+      <div class="slide-tag">Inteligência & Estatística</div>
+      <h1 class="slide-title">Motor Analítico & Predição de Risco Acadêmico</h1>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">📊 Estatística Descritiva Pura</div>
+            <p class="card-desc" style="font-size: 0.95rem; line-height: 1.7;">
+              • <strong>Média ($\mu$) & Mediana ($Md$):</strong> Identificação da tendência central de notas da turma.<br>
+              • <strong>Desvio Padrão ($\sigma$) & CV%:</strong> Avaliação da dispersão e heterogeneidade dos estudantes.<br>
+              • <strong>Correlação de Pearson ($r$):</strong> Comprovação matemática da correlação inversa entre faltas e rendimento escolar.
+            </p>
+          </div>
+
+          <div class="card" style="border-left: 4px solid var(--danger);">
+            <div class="card-title">🎯 Score Ponderado de Risco (0 a 100)</div>
+            <p class="card-desc" style="font-size: 0.95rem; line-height: 1.7;">
+              $$ \text{Score} = w_1 \cdot \text{Déficit Nota} + w_2 \cdot \text{Taxa Faltas} + w_3 \cdot \text{Tendência} $$
+              • 🟢 <strong>0 a 39 — Baixo Risco:</strong> Aluno estável e assíduo.<br>
+              • 🟡 <strong>40 a 69 — Médio Risco:</strong> Alerta preventivo (nota limítrofe).<br>
+              • 🔴 <strong>70 a 100 — Alto Risco:</strong> Risco crítico de reprovação; recomendação imediata de tutoria e intervenção pedagógica.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8 -->
+    <div class="slide" data-slide="8" data-speaker="Nicolas">
+      <div class="slide-tag">Inovação Universitária</div>
+      <h1 class="slide-title">Funcionalidades de Inovação Integradas (IE01 a IE04)</h1>
+      <div class="slide-body">
+        <div class="grid-4">
+          <div class="card">
+            <div class="card-title">👤 IE01 — Perfil</div>
+            <p class="card-desc">Avatar dinâmico, biografia acadêmica, curso e dados de contato com persistência segura.</p>
+            <span class="highlight-pill pill-cyan">comunidade/perfil/</span>
+          </div>
+
+          <div class="card">
+            <div class="card-title">💬 IE02 — Dúvidas</div>
+            <p class="card-desc">Fórum colaborativo para perguntas de estudantes e respostas com marcação de solução aceita.</p>
+            <span class="highlight-pill pill-purple">comunidade/duvidas/</span>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📱 IE03 — WhatsApp</div>
+            <p class="card-desc">Integração preparada para a Meta Cloud API com links diretos dos grupos oficiais das turmas.</p>
+            <span class="highlight-pill pill-green">WhatsApp Cloud API</span>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🏫 IE04 — Locais</div>
+            <p class="card-desc">Visualização rápida de Campus, Bloco e Sala de aula para eliminar desorientação no prédio.</p>
+            <span class="highlight-pill pill-amber">comunidade/locais/</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9 -->
+    <div class="slide" data-slide="9" data-speaker="Nicolas / Augusto">
+      <div class="slide-tag">Demonstração ao Vivo</div>
+      <h1 class="slide-title">Demonstração Prática do Sistema (Live Demo)</h1>
+      <div class="slide-body">
+        <div class="grid-3">
+          <div class="metric-box">
+            <div class="metric-value">HUD</div>
+            <div class="metric-label">Dashboard Escuro Geral</div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">
+              Métricas em tempo real, badges de risco, filtros de turma e tabela reativa.
+            </p>
+          </div>
+
+          <div class="metric-box">
+            <div class="metric-value">Chart.js</div>
+            <div class="metric-label">Módulo Analítico</div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">
+              Histogramas, dispersão de Pearson, comparação de médias e taxa de aprovação.
+            </p>
+          </div>
+
+          <div class="metric-box">
+            <div class="metric-value">REST</div>
+            <div class="metric-label">APIs & Comunidade</div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">
+              Endpoints DRF, fórum de dúvidas e consulta ágil de salas de aula.
+            </p>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 24px; text-align: center; border: 1px dashed var(--primary);">
+          <div style="font-size: 1.1rem; color: #fff;">
+            🚀 <strong>Comando de Execução:</strong> <code>python manage.py runserver</code>
+          </div>
+          <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 6px;">
+            Acesse: <a href="http://127.0.0.1:8000/" target="_blank" style="color: var(--primary);">http://127.0.0.1:8000/</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10 -->
+    <div class="slide" data-slide="10" data-speaker="Augusto">
+      <div class="slide-tag">Conclusões & Roadmap</div>
+      <h1 class="slide-title">Resultados Obtidos & Próximos Passos</h1>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">✅ Metas Superadas na Entrega 2</div>
+            <p class="card-desc" style="font-size: 0.95rem; line-height: 1.7;">
+              • 100% dos Requisitos Funcionais <strong>RF01 a RF09</strong> atendidos.<br>
+              • Requisitos Não-Funcionais <strong>RNF01 a RNF04</strong> validados (segurança, modularidade MVT, qualidade e UML).<br>
+              • Banco relacional PostgreSQL integrado com migrações aplicadas.<br>
+              • Interface moderna em Dark Glassmorphism elogiada em testes de usabilidade.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🔮 Próximos Passos (Ciclo 3 / Final)</div>
+            <p class="card-desc" style="font-size: 0.95rem; line-height: 1.7;">
+              • <strong>Machine Learning Supervisionado:</strong> Modelos com Scikit-Learn (Regressão Logística e Random Forest).<br>
+              • <strong>Integração com AVA da UniEVANGÉLICA:</strong> Sincronização automatizada de notas do Moodle.<br>
+              • <strong>Deploy em Nuvem:</strong> Publicação com Docker/Railway para acesso de toda a instituição.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11 -->
+    <div class="slide" data-slide="11" data-speaker="Toda a Equipe">
+      <div class="slide-tag">Encerramento</div>
+      <h1 class="slide-title">SIMPA — Transformando Dados em Sucesso</h1>
+      <div class="slide-body" style="text-align: center;">
+        <h2 style="font-size: 1.8rem; color: #fff; margin-bottom: 12px;">Muito Obrigado pela Atenção!</h2>
+        <p style="font-size: 1.15rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 30px auto; line-height: 1.6;">
+          O SIMPA une a robustez da engenharia de software com a inteligência de dados para combater a evasão e impulsionar o potencial acadêmico na UniEVANGÉLICA.
+        </p>
+        <div class="card" style="display: inline-block; padding: 16px 36px; border-color: var(--primary);">
+          <div style="font-size: 1.1rem; color: var(--primary); font-weight: 700;">
+            ❓ Aberto para Perguntas da Banca Avaliadora
+          </div>
+        </div>
+        <div style="margin-top: 24px; font-size: 0.85rem; color: var(--text-muted);">
+          GitHub: <a href="https://github.com/AugustoCesarF/SIMPA.git" target="_blank" style="color: var(--primary);">github.com/AugustoCesarF/SIMPA</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Speaker Notes Panel -->
+  <div class="notes-panel" id="notesPanel">
+    <div class="notes-title">
+      <span>🎙️ NOTAS DO ORADOR — <span id="speakerName" style="color:#fff;">Augusto</span></span>
+      <button class="btn" style="padding: 2px 8px; font-size: 0.75rem;" onclick="toggleNotes()">Fechar (ESC)</button>
+    </div>
+    <div class="notes-content" id="notesContent">
+      Script de fala carregando...
+    </div>
+  </div>
+
+  <!-- Footer Navigation -->
+  <footer>
+    <div class="slide-counter">
+      Slide <span id="currentSlideNum">1</span> de <span id="totalSlidesNum">11</span>
+    </div>
+    <div class="arrow-btns">
+      <button class="btn" onclick="prevSlide()">◀ Anterior (←)</button>
+      <button class="btn btn-primary" onclick="nextSlide()">Próximo (→) ▶</button>
+    </div>
+  </footer>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 1;
+
+    // Scripts de fala mapeados
+    const speakerNotes = {
+      1: "Boa noite a todos os professores e colegas. Hoje apresentamos a Entrega 2 do SIMPA — Sistema Inteligente de Monitoramento e Predição Acadêmica. O SIMPA nasceu com o propósito de transformar a gestão acadêmica universitária, detectando precocemente estudantes em risco de evasão. Nesta segunda entrega, realizamos um salto fundamental: transformamos nossa prova de conceito preliminar em uma plataforma completa de nível de produção com Django MVT, PostgreSQL, APIs RESTful e um motor de inteligência analítica.",
+      2: "Nas universidades brasileiras, a evasão escolar costuma ser diagnosticada tarde demais. Quando o professor fecha a N2 ou N3, o aluno já acumulou faltas e não há mais tempo hábil de recuperação. O SIMPA atua antecipando o diagnóstico. Através do cruzamento contínuo entre assiduidade e notas parciais, o sistema calcula um score de risco de 0 a 100 e aponta a causa do risco, sinalizando para a coordenação intervir pedagogicamente a tempo.",
+      3: "Na Entrega 1, apresentamos um protótipo em Flask com dados em memória para validar o conceito. Na Entrega 2, profissionalizamos a engenharia: migramos para Django 5.2 com Django REST Framework, substituímos a memória pelo banco relacional PostgreSQL com integridade 3FN, estruturamos uma camada de serviços dedicada e renovamos completamente a interface visual com o HUD Dark Glassmorphism.",
+      4: "Arquiteturalmente, o SIMPA segue o padrão MVT com separação de responsabilidades. As views Django renderizam templates velozes, enquanto os ViewSets do DRF expõem endpoints JSON seguros com autenticação por token. Um diferencial importante da nossa arquitetura é a camada services.py: cálculos matemáticos e regras de negócio não poluem models nem views, ficando isolados e facilmente testáveis.",
+      5: "A integridade dos dados acadêmicos é garantida no PostgreSQL. O modelo Estudante valida CPF e unicidade de RA. O modelo Turma tem relação N:N com alunos e FK com LocalAula para mapear bloco e sala. O RegistroAcademico possui uma constraint unique_together para impedir duplicidades e calcula automaticamente a situação regimental: Aprovado, Recuperação ou Reprovado.",
+      6: "Em atendimento ao requisito RNF01 e à LGPD, a segurança foi prioridade. Implementamos a validação algorítmica real de CPF da Receita Federal com Módulo 11 nos Serializers. As senhas são criptografadas com hash PBKDF2/SHA-256. E todas as chaves e credenciais de banco estão blindadas em arquivo .env fora do Git.",
+      7: "O coração inteligente do SIMPA é o módulo analítico. Calculamos média, mediana, desvio padrão e o Coeficiente de Variação para medir a dispersão da turma. Calculamos a Correlação de Pearson entre notas e faltas. E nosso motor heurístico gera o Score de Risco de 0 a 100: alunos com score acima de 70 disparam alertas críticos com recomendações imediatas de tutoria.",
+      8: "Além dos requisitos básicos, integramos quatro módulos de inovação: Perfil com avatar dinâmico (IE01), Fórum de Dúvidas aluno-professor com filtro de tópicos resolvidos (IE02), integração preparada com WhatsApp Cloud API para alertas e grupos (IE03), e a central de localização de salas e blocos de aula no campus (IE04).",
+      9: "Vamos agora para a demonstração prática ao vivo! [Nicolas navega, Augusto explica]. Observem o Dashboard HUD escuro rodando na porta 8000: métricas no topo, listagem de alunos com badges de risco coloridos. Clicando em um aluno de alto risco, vemos a causa e a recomendação pedagógica. Em /analytics/, temos quatro gráficos interativos em Chart.js ilustrando distribuição, correlação e médias por turma.",
+      10: "Na Entrega 2, superamos as metas: 100% dos requisitos funcionais RF01 a RF09 e não-funcionais RNF01 a RNF04 cumpridos, banco PostgreSQL ativo e interface elogiada. Para o Ciclo 3 e Entrega Final, implementaremos modelos de Machine Learning supervisionados com Scikit-Learn e sincronização contínua com o AVA Moodle da UniEVANGÉLICA.",
+      11: "Agradecemos ao professor orientador e à UniEVANGÉLICA pela oportunidade de desenvolver uma ferramenta real que combate a evasão. Estamos agora totalmente abertos às perguntas da banca avaliadora!"
+    };
+
+    function updateSlide() {
+      slides.forEach((s, idx) => {
+        s.classList.remove('active');
+        if (idx === currentSlide - 1) {
+          s.classList.add('active');
+        }
+      });
+
+      document.getElementById('currentSlideNum').innerText = currentSlide;
+      document.getElementById('totalSlidesNum').innerText = totalSlides;
+      document.getElementById('progressBar').style.width = ((currentSlide / totalSlides) * 100) + '%';
+
+      // Atualiza notas
+      const activeEl = slides[currentSlide - 1];
+      const speaker = activeEl.getAttribute('data-speaker') || 'Augusto';
+      document.getElementById('speakerName').innerText = speaker;
+      document.getElementById('notesContent').innerText = speakerNotes[currentSlide] || "Sem notas para este slide.";
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function toggleNotes() {
+      document.getElementById('notesPanel').classList.toggle('open');
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Timer Logic
+    let timerInterval = null;
+    let seconds = 0;
+    function toggleTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      } else {
+        timerInterval = setInterval(() => {
+          seconds++;
+          const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+          const secs = String(seconds % 60).padStart(2, '0');
+          document.getElementById('timer').innerText = `⏱️ ${mins}:${secs}`;
+        }, 1000);
+      }
+    }
+
+    // Teclado
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key.toLowerCase() === 'n') {
+        toggleNotes();
+      } else if (e.key === 'Escape') {
+        document.getElementById('notesPanel').classList.remove('open');
+      }
+    });
+
+    // Inicia
+    updateSlide();
+  </script>
+</body>
+</html>
